@@ -5,11 +5,9 @@
 <title>IMDb Player</title>
 <link rel="icon" href="carrete-de-pelicula.ico" type="image/x-icon">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
 html, body { height: 100%; width: 100%; overflow-y: scroll; scroll-behavior: smooth; }
-
 body {
   background: linear-gradient(rgba(0,10,30,0.95), rgba(2,8,25,0.95)),
               url('https://images.unsplash.com/photo-1532375810709-7bfc0c3d75d3?auto=format&fit=crop&w=1950&q=80') 
@@ -17,16 +15,6 @@ body {
   background-size: cover;
   color: #fff;
   transition: background 1.5s ease-in-out;
-}
-
-/* Overlay modo cine */
-#cineOverlay, #cineOverlaySeries {
-  position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); display:none; z-index:1000;
-}
-#cineOverlay.active, #cineOverlaySeries.active { display:block; }
-#cineOverlay iframe, #cineOverlaySeries iframe {
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  width:90%; height:80%; border:none; border-radius:16px; box-shadow:0 0 80px rgba(255,255,255,0.4);
 }
 
 #main { display:flex; flex-direction:column; padding:25px; max-width:1200px; margin:0 auto; }
@@ -43,8 +31,8 @@ input:focus { background: rgba(0,25,50,0.8); transform:scale(1.02); }
 button.action-btn { padding:16px 24px; font-size:18px; border-radius:12px; background:#00395a; color:#fff; cursor:pointer; transition:all 0.3s ease; }
 button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0,0,0.6); }
 
-#results, #seriesResults { display:flex; flex-wrap:wrap; justify-content:center; gap:15px; padding:10px; }
-.card { position:relative; display:flex; flex-direction:column; align-items:center; background:rgba(0,25,50,0.8); padding:12px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.5); cursor:pointer; transition:all 0.4s ease; width:140px; margin-bottom:15px; }
+#results, #seriesResults { display:flex; flex-wrap:wrap; justify-content:center; gap:15px; padding:0; }
+.card { display:flex; flex-direction:column; align-items:center; background:rgba(0,25,50,0.8); padding:12px; border-radius:16px; cursor:pointer; transition:all 0.4s ease; width:140px; margin-bottom:15px; }
 .card:hover { transform:scale(1.05) translateY(-5px); box-shadow:0 12px 25px rgba(0,0,0,0.7); }
 .poster { width:100px; height:150px; object-fit:cover; border-radius:8px; margin-bottom:8px; }
 .title { font-weight:700; font-size:14px; color:#fff; text-align:center; margin-bottom:5px; }
@@ -62,196 +50,231 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
 #playerContainer, #seriesPlayerContainer { width:95%; height:60vh; background:#000; border-radius:20px; overflow:hidden; box-shadow:0 12px 35px rgba(0,0,0,0.6); margin-bottom:30px; transition:box-shadow 1s ease; }
 #playerContainer iframe, #seriesPlayerContainer iframe { width:100%; height:100%; border:0; }
 
+.pagination { display: flex; justify-content: center; margin: 20px 0;}
+.pagination button { padding: 10px 16px; background: rgba(0, 40, 80, 0.7); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition:all 0.3s ease;}
+.pagination button:hover { background: rgba(0, 60, 120, 0.9); transform: translateY(-2px);}
+.pagination button:disabled { background: rgba(50,50,50,0.5); cursor: not-allowed; transform: none; }
+
+#cineOverlay, #cineOverlaySeries { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); display:none; z-index:1000;}
+#cineOverlay iframe, #cineOverlaySeries iframe { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:90%; height:80%; border:none; border-radius:16px; box-shadow:0 0 80px rgba(255,255,255,0.4); }
+#cineOverlay button, #cineOverlaySeries button { position:absolute; top:20px; right:20px; z-index:1010; padding:10px 16px; font-size:16px; background:rgba(255,255,255,0.2); color:#fff; border:none; border-radius:8px; cursor:pointer; }
+
 @media (max-width:768px){ input{width:90%;} button{width:90%;} .card{width:40%;} .expanded-card img{width:120px;height:180px;} #playerContainer,#seriesPlayerContainer{height:50vh;} }
-@media (max-width:480px){ .card{width:70%;} .expanded-card img{width:100px;height:150px;} #playerContainer,#seriesPlayerContainer{height:45vh;} }
+@media (max-width:480px){ .card{width:70%;} .expanded-card img{width:100px;height:150px;} #playerContainer,#seriesPlayerContainer{height:45vh;} .pagination button { padding: 8px 12px; } }
 </style>
 </head>
 <body>
 <div id="main">
-  <h2>IMDb Player</h2>
-  <div id="modeSelector">
-    <button onclick="showMode('movies')">Películas 🎬</button>
-    <button onclick="showMode('series')">Series 📺</button>
+<h2>IMDb Player</h2>
+<div id="modeSelector">
+  <button onclick="showMode('movies')">Películas 🎬</button>
+  <button onclick="showMode('series')">Series 📺</button>
+</div>
+
+<!-- PELÍCULAS -->
+<div id="moviesSection" style="display:none;">
+  <div id="searchContainer">
+    <input type="text" id="titleInput" placeholder="Escribe el título...">
+    <button class="action-btn" onclick="startSearch()">Buscar</button>
   </div>
-
-  <!-- PELÍCULAS -->
-  <div id="moviesSection" style="display:none;">
-    <h2>Buscar película</h2>
-    <div id="searchContainer">
-      <input type="text" id="titleInput" placeholder="Escribe el título...">
-      <button class="action-btn" onclick="startSearch()">Buscar</button>
+  <div id="results"></div>
+  <div id="moviesPagination" class="pagination"></div>
+  <div id="playerWrapper">
+    <div id="manualInput">
+      <input type="text" id="imdbInput" placeholder="Introduce código IMDb (tt...)">
+      <button class="action-btn" onclick="loadMovie()">▶️ Cargar película</button>
+      <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
     </div>
-    <div id="results"></div>
-
-    <div id="playerWrapper">
-      <h2>Reproductor</h2>
-      <div id="manualInput">
-        <input type="text" id="imdbInput" placeholder="Introduce código IMDb (tt...)">
-        <button class="action-btn" onclick="loadMovie()">Cargar película</button>
-        <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
-      </div>
-      <div id="playerContainer">
-        <iframe id="playerIframe" src="https://vidfast.pro/movie/000000" allowfullscreen allow="encrypted-media"></iframe>
-      </div>
-    </div>
-  </div>
-
-  <!-- SERIES -->
-  <div id="seriesSection" style="display:none;">
-    <h2>Buscar serie</h2>
-    <div id="searchSeriesContainer">
-      <input type="text" id="seriesTitleInput" placeholder="Escribe el título de la serie...">
-      <button class="action-btn" onclick="startSeriesSearch()">Buscar</button>
-    </div>
-    <div id="seriesResults"></div>
-
-    <div id="seriesPlayerWrapper">
-      <h2>Reproductor de series</h2>
-      <div id="manualSeriesInput">
-        <input type="text" id="seriesImdbInput" placeholder="Introduce código IMDb (tt...)">
-        <input type="number" id="seasonInput" placeholder="Temporada" min="1">
-        <input type="number" id="episodeInput" placeholder="Episodio" min="1">
-        <button class="action-btn" onclick="loadSeries()">Cargar episodio</button>
-        <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
-      </div>
-      <div id="seriesPlayerContainer">
-        <iframe id="seriesPlayerIframe" src="https://vidfast.pro/tv/000000/1/1" allowfullscreen allow="encrypted-media"></iframe>
-      </div>
+    <div id="playerContainer">
+      <iframe id="playerIframe" src="https://vidfast.pro/movie/000000" allowfullscreen allow="encrypted-media"></iframe>
     </div>
   </div>
 </div>
 
-<div id="cineOverlay" onclick="toggleCineMode()"><iframe id="cineIframe" src="" allowfullscreen allow="encrypted-media"></iframe></div>
-<div id="cineOverlaySeries" onclick="toggleCineModeSeries()"><iframe id="cineSeriesIframe" src="" allowfullscreen allow="encrypted-media"></iframe></div>
+<!-- SERIES -->
+<div id="seriesSection" style="display:none;">
+  <div id="searchSeriesContainer">
+    <input type="text" id="seriesTitleInput" placeholder="Escribe el título de la serie...">
+    <button class="action-btn" onclick="startSeriesSearch()">Buscar</button>
+  </div>
+  <div id="seriesResults"></div>
+  <div id="seriesPagination" class="pagination"></div>
+  <div id="seriesPlayerWrapper">
+    <div id="manualSeriesInput">
+      <input type="text" id="seriesImdbInput" placeholder="Introduce código IMDb (tt...)">
+      <input type="number" id="seasonInput" placeholder="Temporada" min="1">
+      <input type="number" id="episodeInput" placeholder="Episodio" min="1">
+      <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
+      <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
+    </div>
+    <div id="seriesPlayerContainer">
+      <iframe id="seriesPlayerIframe" src="https://vidfast.pro/tv/000000/1/1" allowfullscreen allow="encrypted-media"></iframe>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- OVERLAY MODO CINE -->
+<div id="cineOverlay">
+  <iframe id="cineIframe" src="" allowfullscreen allow="encrypted-media"></iframe>
+  <button onclick="toggleCineMode()">Salir 🎬</button>
+</div>
+<div id="cineOverlaySeries">
+  <iframe id="cineSeriesIframe" src="" allowfullscreen allow="encrypted-media"></iframe>
+  <button onclick="toggleCineModeSeries()">Salir 🎬</button>
+</div>
 
 <script>
 const apiKey="1793830";
+let currentTitle='', currentPage=1, totalPages=0, currentSeriesTitle='', currentSeriesPage=1, totalSeriesPages=0;
 
-/* MODO */
+// Función modo
 function showMode(mode){
   document.getElementById('moviesSection').style.display = mode==='movies'?'block':'none';
   document.getElementById('seriesSection').style.display = mode==='series'?'block':'none';
 }
 
-/* ================= PELÍCULAS ================= */
+// --------- PELÍCULAS ---------
 const results=document.getElementById('results');
 const imdbInput=document.getElementById('imdbInput');
 const playerIframe=document.getElementById('playerIframe');
-let currentTitle='', currentPage=1, totalResults=0;
+const moviesPagination=document.getElementById('moviesPagination');
 
-function startSearch(){ 
-  results.innerHTML=''; 
-  currentTitle=document.getElementById('titleInput').value.trim(); 
-  if(!currentTitle){ results.innerHTML='<p>⚠️ Escribe un título primero.</p>'; return; } 
-  currentPage=1; totalResults=0; searchMovie(currentPage); 
-}
-function searchMovie(page){ 
-  const script=document.createElement('script'); 
-  script.src=`https://www.omdbapi.com/?s=${encodeURIComponent(currentTitle)}&page=${page}&apikey=${apiKey}&callback=handleResults`; 
-  document.body.appendChild(script); 
+function startSearch(){
+  results.innerHTML=''; moviesPagination.innerHTML=''; currentPage=1;
+  currentTitle=document.getElementById('titleInput').value.trim();
+  if(!currentTitle) return;
+  searchMovie(currentPage);
 }
 
-function handleResults(data){
-  if(data.Response==='True'){
-    if(currentPage===1) results.innerHTML='';
-    totalResults=parseInt(data.totalResults);
+function searchMovie(page){
+  fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(currentTitle)}&page=${page}&apikey=${apiKey}`)
+  .then(r=>r.json()).then(data=>{
+    results.innerHTML=''; 
+    if(data.Response!=='True'){ moviesPagination.innerHTML=''; return; }
+    totalPages=Math.ceil(parseInt(data.totalResults)/10);
+    updatePagination(moviesPagination,'movies');
     data.Search.forEach(movie=>{
       fetch(`https://www.omdbapi.com/?i=${movie.imdbID}&apikey=${apiKey}`).then(r=>r.json()).then(details=>{
         const card=document.createElement('div'); card.className='card';
-        const poster=document.createElement('img'); poster.className='poster'; poster.src=movie.Poster!=='N/A'?movie.Poster:'https://via.placeholder.com/100x150?text=No+Image';
-        const titleEl=document.createElement('div'); titleEl.className='title'; titleEl.textContent=`${movie.Title} (${movie.Year})`;
-        card.appendChild(poster); card.appendChild(titleEl);
-        card.addEventListener('click',()=>{
+        card.innerHTML=`<img class="poster" src="${movie.Poster!=='N/A'?movie.Poster:'https://via.placeholder.com/100x150?text=No+Image'}"><div class="title">${movie.Title} (${movie.Year})</div>`;
+        card.onclick=()=>{
+          results.innerHTML=''; moviesPagination.innerHTML='';
           const expanded=document.createElement('div'); expanded.className='expanded-card';
-          expanded.innerHTML=`
-            <img id="expandedPoster" src="${movie.Poster!=='N/A'?movie.Poster:'https://via.placeholder.com/150x225?text=No+Image'}" alt="Poster">
-            <div class="expanded-info">
-              <h3>${movie.Title} (${movie.Year})</h3>
-              <p><strong>Director:</strong> ${details.Director}</p>
-              <p><strong>Reparto:</strong> ${details.Actors}</p>
-              <p><strong>Puntuación IMDb:</strong> <span id="ratingVal">${details.imdbRating}</span></p>
-              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(movie.Title+' trailer')}" target="_blank">▶️ Ver tráiler</a>
-            </div>`;
-          results.innerHTML=''; results.appendChild(expanded);
-
-          // Player
+          function formatDuration(runtime){
+            if(!runtime || runtime==="N/A") return "-";
+            const mins=parseInt(runtime); const hrs=Math.floor(mins/60); const min=mins%60;
+            return `${runtime} (${hrs}h ${min}min)`;
+          }
+          expanded.innerHTML=`<img src="${movie.Poster!=='N/A'?movie.Poster:'https://via.placeholder.com/150x225?text=No+Image'}">
+          <div class="expanded-info">
+            <h3>${movie.Title} (${movie.Year})</h3>
+            <p><strong>Director:</strong> ${details.Director}</p>
+            <p><strong>Reparto:</strong> ${details.Actors}</p>
+            <p><strong>IMDb:</strong> <span style="color:limegreen;">${details.imdbRating}</span></p>
+            <p><strong>Género:</strong> ${details.Genre}</p>
+            <p><strong>Duración:</strong> ${formatDuration(details.Runtime)}</p>
+            <p><strong>País:</strong> ${details.Country}</p>
+            <p><strong>Sinopsis:</strong> ${details.Plot}</p>
+            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(movie.Title+' trailer')}" target="_blank">▶️ Ver tráiler</a>
+          </div>`;
+          results.appendChild(expanded);
           playerIframe.src=`https://vidfast.pro/movie/${movie.imdbID}`;
           imdbInput.value=movie.imdbID;
-
-          // FONDO DE LA WEB: degradado sutil con color principal del póster
-          const posterImg = expanded.querySelector('#expandedPoster');
-          posterImg.crossOrigin = "anonymous";
-          posterImg.addEventListener('load', () => {
-            try {
-              const colorThief = new ColorThief();
-              const [r,g,b] = colorThief.getColor(posterImg);
-              document.body.style.background = `linear-gradient(rgba(${r*0.05},${g*0.05},${b*0.05},0.3), rgba(0,10,30,0.95)), url('https://images.unsplash.com/photo-1532375810709-7bfc0c3d75d3?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed`;
-              document.body.style.backgroundSize="cover";
-            } catch(e){ console.warn("Color Thief falló", e); }
-          });
-
-          // Rating color
-          const ratingEl = expanded.querySelector("#ratingVal");
-          const ratingNum = parseFloat(details.imdbRating);
-          if(ratingNum >= 7.5) ratingEl.style.color="limegreen";
-          else if(ratingNum >= 5) ratingEl.style.color="gold";
-          else ratingEl.style.color="tomato";
-        });
+        };
         results.appendChild(card);
       });
     });
-  }else{ results.innerHTML='<p>❌ No se encontraron resultados.</p>'; }
-}
-
-function loadMovie(){ const code=imdbInput.value.trim(); if(code) playerIframe.src=`https://vidfast.pro/movie/${code}`; }
-function toggleCineMode(){ const overlay=document.getElementById("cineOverlay"); const cineIframe=document.getElementById("cineIframe"); if(overlay.classList.contains("active")){ overlay.classList.remove("active"); cineIframe.src=""; }else{ overlay.classList.add("active"); cineIframe.src=playerIframe.src; } }
-
-/* ================= SERIES ================= */
-const seriesResults=document.getElementById('seriesResults');
-const seriesImdbInput=document.getElementById('seriesImdbInput');
-const seriesPlayerIframe=document.getElementById('seriesPlayerIframe');
-
-function startSeriesSearch(){
-  const title=document.getElementById('seriesTitleInput').value.trim();
-  if(!title){ seriesResults.innerHTML='<p>⚠️ Escribe un título primero.</p>'; return; }
-  fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(title)}&type=series&apikey=${apiKey}`)
-  .then(res=>res.json())
-  .then(data=>{
-    seriesResults.innerHTML='';
-    if(data.Response==='True'){
-      data.Search.forEach(series=>{
-        const card=document.createElement('div'); card.className='card';
-        const poster=document.createElement('img'); poster.className='poster';
-        poster.src=series.Poster!=='N/A'?series.Poster:'https://via.placeholder.com/100x150?text=No+Image';
-        const titleEl=document.createElement('div'); titleEl.className='title'; titleEl.textContent=`${series.Title} (${series.Year})`;
-        card.appendChild(poster); card.appendChild(titleEl);
-        card.addEventListener('click',()=>{
-          seriesImdbInput.value=series.imdbID;
-          const season=prompt("Introduce temporada:","1");
-          const episode=prompt("Introduce episodio:","1");
-          if(season && episode) seriesPlayerIframe.src=`https://vidfast.pro/tv/${series.imdbID}/${season}/${episode}`;
-        });
-        seriesResults.appendChild(card);
-      });
-    }else{ seriesResults.innerHTML='<p>❌ No se encontraron series.</p>'; }
   });
 }
 
-function loadSeries(){
+function loadMovie(){ const code=imdbInput.value.trim(); if(code) playerIframe.src=`https://vidfast.pro/movie/${code}`; }
+function toggleCineMode(){ 
+  const overlay=document.getElementById('cineOverlay'); const iframe=document.getElementById('cineIframe');
+  if(overlay.style.display==='block'){ overlay.style.display='none'; iframe.src=''; } 
+  else{ overlay.style.display='block'; iframe.src=playerIframe.src; }
+}
+
+// --------- SERIES ---------
+const seriesResults=document.getElementById('seriesResults');
+const seriesImdbInput=document.getElementById('seriesImdbInput');
+const seriesPlayerIframe=document.getElementById('seriesPlayerIframe');
+const seasonInput=document.getElementById('seasonInput');
+const episodeInput=document.getElementById('episodeInput');
+const seriesPagination=document.getElementById('seriesPagination');
+
+function startSeriesSearch(){
+  seriesResults.innerHTML=''; seriesPagination.innerHTML=''; currentSeriesPage=1;
+  currentSeriesTitle=document.getElementById('seriesTitleInput').value.trim();
+  if(!currentSeriesTitle) return;
+  searchSeries(currentSeriesPage);
+}
+
+function searchSeries(page){
+  fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(currentSeriesTitle)}&type=series&page=${page}&apikey=${apiKey}`)
+  .then(res=>res.json()).then(data=>{
+    seriesResults.innerHTML=''; 
+    if(data.Response!=='True'){ seriesPagination.innerHTML=''; return; }
+    totalSeriesPages=Math.ceil(parseInt(data.totalResults)/10);
+    updatePagination(seriesPagination,'series');
+    data.Search.forEach(series=>{
+      fetch(`https://www.omdbapi.com/?i=${series.imdbID}&apikey=${apiKey}`).then(r=>r.json()).then(details=>{
+        const card=document.createElement('div'); card.className='card';
+        card.innerHTML=`<img class="poster" src="${series.Poster!=='N/A'?series.Poster:'https://via.placeholder.com/100x150?text=No+Image'}"><div class="title">${series.Title} (${series.Year})</div>`;
+        card.onclick=()=>{
+          seriesResults.innerHTML=''; seriesPagination.innerHTML='';
+          const expanded=document.createElement('div'); expanded.className='expanded-card';
+          expanded.innerHTML=`<img src="${series.Poster!=='N/A'?series.Poster:'https://via.placeholder.com/150x225?text=No+Image'}">
+          <div class="expanded-info">
+            <h3>${series.Title} (${series.Year})</h3>
+            <p><strong>Director:</strong> ${details.Director}</p>
+            <p><strong>Reparto:</strong> ${details.Actors}</p>
+            <p><strong>IMDb:</strong> <span style="color:limegreen;">${details.imdbRating}</span></p>
+            <p><strong>Género:</strong> ${details.Genre}</p>
+            <p><strong>Temporadas:</strong> ${details.totalSeasons}</p>
+            <p><strong>País:</strong> ${details.Country}</p>
+            <p><strong>Sinopsis:</strong> ${details.Plot}</p>
+            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(series.Title+' trailer')}" target="_blank">▶️ Ver tráiler</a>
+          </div>`;
+          seriesResults.appendChild(expanded);
+          seriesImdbInput.value=series.imdbID;
+          updateSeriesPlayer();
+        };
+        seriesResults.appendChild(card);
+      });
+    });
+  });
+}
+
+function updateSeriesPlayer(){
   const code=seriesImdbInput.value.trim();
-  const season=document.getElementById('seasonInput').value.trim();
-  const episode=document.getElementById('episodeInput').value.trim();
+  const season=seasonInput.value.trim();
+  const episode=episodeInput.value.trim();
   if(code && season && episode) seriesPlayerIframe.src=`https://vidfast.pro/tv/${code}/${season}/${episode}`;
 }
 
-function toggleCineModeSeries(){
-  const overlay=document.getElementById("cineOverlaySeries"); 
-  const cineIframe=document.getElementById("cineSeriesIframe");
-  if(overlay.classList.contains("active")){ overlay.classList.remove("active"); cineIframe.src=""; }
-  else{ overlay.classList.add("active"); cineIframe.src=seriesPlayerIframe.src; }
+function loadSeries(){ updateSeriesPlayer(); }
+function toggleCineModeSeries(){ 
+  const overlay=document.getElementById('cineOverlaySeries'); const iframe=document.getElementById('cineSeriesIframe');
+  if(overlay.style.display==='block'){ overlay.style.display='none'; iframe.src=''; } 
+  else{ overlay.style.display='block'; iframe.src=seriesPlayerIframe.src; }
+}
+
+// --------- PAGINACIÓN ---------
+function updatePagination(container,type){
+  container.innerHTML='';
+  const page=type==='movies'?currentPage:currentSeriesPage;
+  const total=type==='movies'?totalPages:totalSeriesPages;
+  const prev=document.createElement('button'); prev.textContent='Anterior'; prev.disabled=page<=1;
+  prev.onclick=()=>{ if(type==='movies'){ currentPage--; searchMovie(currentPage);} else {currentSeriesPage--; searchSeries(currentSeriesPage);} };
+  const next=document.createElement('button'); next.textContent='Siguiente'; next.disabled=page>=total;
+  next.onclick=()=>{ if(type==='movies'){ currentPage++; searchMovie(currentPage);} else {currentSeriesPage++; searchSeries(currentSeriesPage);} };
+  container.appendChild(prev); container.appendChild(next);
 }
 </script>
 </body>
 </html>
+
+
 
 
