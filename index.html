@@ -5,6 +5,7 @@
 <title>IMDb Player</title>
 <link rel="icon" href="carrete-de-pelicula.ico" type="image/x-icon">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
 html, body { height: 100%; width: 100%; overflow-y: scroll; scroll-behavior: smooth; }
@@ -15,8 +16,30 @@ body {
               no-repeat center center fixed;
   background-size: cover;
   color: #fff;
+  transition: background 1.5s ease-in-out;
 }
 
+/* Overlay modo cine */
+#cineOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  z-index: 1000;
+}
+#cineOverlay.active { display: block; }
+#cineOverlay iframe {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 90%; height: 80%;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 0 80px rgba(255,255,255,0.4);
+}
+
+/* Layout */
 #main { display: flex; flex-direction: column; padding: 25px; max-width: 1200px; margin: 0 auto; }
 h2 { margin-bottom: 20px; color: #fff; text-align: center; font-weight: 700; letter-spacing: 1px; }
 
@@ -78,12 +101,29 @@ button:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.6); 
 .expanded-info { color: #fff; font-size: 14px; line-height: 2; }
 .expanded-info h3 { margin-bottom: 15px; }
 
+/* 🎬 Estilo del enlace del tráiler */
+.expanded-info a {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: #2c2c2c;
+  color: #ccc;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.expanded-info a:hover {
+  background: #444;
+  color: #fff;
+}
+
 /* Reproductor */
 #playerWrapper { margin-top: 20px; display: flex; flex-direction: column; align-items: center; }
 #manualInput { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 20px; }
 #manualInput input { width: 280px; background: rgba(0,35,65,0.6); }
 #manualInput input:focus { background: rgba(0,35,65,0.8); }
-#playerContainer { width: 95%; height: 60vh; background: #000; border-radius: 20px; overflow: hidden; box-shadow: 0 12px 35px rgba(0,0,0,0.6); margin-bottom: 30px; }
+#playerContainer { width: 95%; height: 60vh; background: #000; border-radius: 20px; overflow: hidden; box-shadow: 0 12px 35px rgba(0,0,0,0.6); margin-bottom: 30px; transition: box-shadow 1s ease; }
 #playerContainer iframe { width: 100%; height: 100%; border: 0; }
 
 #loadMoreBtn { padding: 12px 20px; border-radius: 12px; background: #00395a; color: #fff; cursor: pointer; margin: 15px auto; display: none; font-size: 16px; transition: 0.3s; }
@@ -109,11 +149,17 @@ button:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.6); 
     <div id="manualInput">
       <input type="text" id="imdbInput" placeholder="Introduce código IMDb (tt...)">
       <button onclick="loadMovie()">Cargar película</button>
+      <button onclick="toggleCineMode()">🎬 Modo cine</button>
     </div>
     <div id="playerContainer">
       <iframe id="playerIframe" src="https://vidfast.pro/movie/000000" allowfullscreen allow="encrypted-media"></iframe>
     </div>
   </div>
+</div>
+
+<!-- Overlay modo cine -->
+<div id="cineOverlay" onclick="toggleCineMode()">
+  <iframe id="cineIframe" src="" allowfullscreen allow="encrypted-media"></iframe>
 </div>
 
 <script>
@@ -163,16 +209,45 @@ function handleResults(data){
         card.appendChild(poster); card.appendChild(titleEl); card.appendChild(starsDiv); card.appendChild(tooltip);
         card.addEventListener('click',()=>{
           const expanded=document.createElement('div'); expanded.className='expanded-card';
-          expanded.innerHTML=`<img src="${movie.Poster!=='N/A'?movie.Poster:'https://via.placeholder.com/150x225?text=No+Image'}" alt="Poster">
-          <div class="expanded-info">
-            <h3>${movie.Title} (${movie.Year})</h3>
-            <p><strong>Director:</strong> ${details.Director}</p>
-            <p><strong>Reparto:</strong> ${details.Actors}</p>
-            <p><strong>Puntuación IMDb:</strong> ${details.imdbRating}</p>
-          </div>`;
+          expanded.innerHTML=`
+            <img id="expandedPoster" src="${movie.Poster!=='N/A'?movie.Poster:'https://via.placeholder.com/150x225?text=No+Image'}" alt="Poster">
+            <div class="expanded-info">
+              <h3>${movie.Title} (${movie.Year})</h3>
+              <p><strong>Director:</strong> ${details.Director}</p>
+              <p><strong>Reparto:</strong> ${details.Actors}</p>
+              <p><strong>Puntuación IMDb:</strong> <span id="ratingVal">${details.imdbRating}</span></p>
+              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(movie.Title+' trailer')}" target="_blank">▶️ Ver tráiler</a>
+            </div>`;
           results.innerHTML=''; results.appendChild(expanded);
+
+          // Player
           playerIframe.src=`https://vidfast.pro/movie/${movie.imdbID}`;
           imdbInput.value=movie.imdbID;
+
+          // Color dinámico
+          const posterImg = expanded.querySelector('#expandedPoster');
+          posterImg.crossOrigin = "anonymous";
+          posterImg.addEventListener('load', () => {
+            try {
+              const colorThief = new ColorThief();
+              const [r,g,b] = colorThief.getColor(posterImg);
+              document.body.style.background = `
+                linear-gradient(rgba(${r},${g},${b},0.6), rgba(0,8,30,0.95)),
+                url('https://images.unsplash.com/photo-1532375810709-7bfc0c3d75d3?auto=format&fit=crop&w=1950&q=80') 
+                no-repeat center center fixed`;
+              document.body.style.backgroundSize="cover";
+              // Ambilight player
+              document.getElementById("playerContainer").style.boxShadow = `0 0 60px rgba(${r},${g},${b},0.8)`;
+            } catch (e) { console.warn("No se pudo extraer el color", e); }
+          });
+
+          // Rating coloreado
+          const ratingEl = expanded.querySelector("#ratingVal");
+          const ratingNum = parseFloat(details.imdbRating);
+          if(ratingNum >= 7.5) ratingEl.style.color="limegreen";
+          else if(ratingNum >= 5) ratingEl.style.color="gold";
+          else ratingEl.style.color="tomato";
+
           expanded.scrollIntoView({behavior:'smooth'});
         });
         results.appendChild(card);
@@ -188,8 +263,19 @@ function handleResults(data){
 
 function loadMore() { currentPage++; searchMovie(currentPage); }
 function loadMovie() { const code=imdbInput.value.trim(); if(code) playerIframe.src=`https://vidfast.pro/movie/${code}`; }
+
+// 🎬 Modo cine
+function toggleCineMode() {
+  const overlay = document.getElementById("cineOverlay");
+  const cineIframe = document.getElementById("cineIframe");
+  if(overlay.classList.contains("active")){
+    overlay.classList.remove("active");
+    cineIframe.src="";
+  } else {
+    overlay.classList.add("active");
+    cineIframe.src = playerIframe.src;
+  }
+}
 </script>
 </body>
 </html>
-
-
