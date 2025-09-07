@@ -68,7 +68,7 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
 #manualInput, #manualSeriesInput { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:20px; }
 #playerContainer, #seriesPlayerContainer { width:95%; height:60vh; background:#000; border-radius:20px; overflow:hidden; box-shadow:0 12px 35px rgba(0,0,0,0.6); margin-bottom:15px; transition:box-shadow 1s ease; }
 #playerContainer iframe, #seriesPlayerContainer iframe { width:100%; height:100%; border:0; }
-#movieSynopsisBox {
+#movieSynopsisBox, #seriesSynopsisBox {
   width: 95%;
   max-width: 800px;
   background: rgba(0,25,50,0.85);
@@ -142,7 +142,7 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
     <div id="playerContainer">
       <iframe id="playerIframe" src="https://vidfast.pro/movie/000000" allowfullscreen allow="encrypted-media"></iframe>
     </div>
-    <!-- Nuevo recuadro para la sinopsis debajo del reproductor -->
+    <!-- Recuadro para la sinopsis debajo del reproductor -->
     <div id="movieSynopsisBox"></div>
   </div>
 </div>
@@ -165,6 +165,8 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
     <div id="seriesPlayerContainer">
       <iframe id="seriesPlayerIframe" src="https://vidfast.pro/tv/000000/1/1" allowfullscreen allow="encrypted-media"></iframe>
     </div>
+    <!-- Recuadro para la sinopsis debajo del reproductor -->
+    <div id="seriesSynopsisBox"></div>
   </div>
 </div>
 </div>
@@ -246,7 +248,7 @@ async function searchMovie(page) {
         results.appendChild(expanded);
         playerIframe.src = `https://vidfast.pro/movie/${details.imdb_id || ''}`;
         imdbInput.value = details.imdb_id || '';
-        // Mostrar sinopsis en el nuevo rectángulo debajo del reproductor con "Sinopsis:" en negrita
+        // Mostrar sinopsis en el recuadro debajo del reproductor con "Sinopsis:" en negrita
         movieSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || 'Sinopsis no disponible.'}`;
       };
       results.appendChild(card);
@@ -263,7 +265,7 @@ function loadMovie() {
     movieSynopsisBox.innerHTML = ''; // borrar sinopsis al cargar manual
   }
 }
-// Funciones para manejar botones en modo cine
+// Funciones para modo cine
 function addReloadButton() {
   if (!document.getElementById('cineReloadBtn')) {
     const reloadBtn = document.createElement('button');
@@ -272,7 +274,7 @@ function addReloadButton() {
     reloadBtn.title = 'Recargar película';
     reloadBtn.onclick = () => {
       const iframe = document.getElementById('cineIframe');
-      iframe.src = iframe.src; // Se recarga la película
+      iframe.src = iframe.src; // recargar
     };
     const overlay = document.getElementById('cineOverlay');
     overlay.appendChild(reloadBtn);
@@ -280,9 +282,7 @@ function addReloadButton() {
 }
 function removeReloadButton() {
   const reloadBtn = document.getElementById('cineReloadBtn');
-  if (reloadBtn) {
-    reloadBtn.remove();
-  }
+  if (reloadBtn) reloadBtn.remove();
 }
 function toggleCineMode() {
   const overlay = document.getElementById('cineOverlay');
@@ -304,9 +304,11 @@ const seriesPlayerIframe = document.getElementById('seriesPlayerIframe');
 const seasonInput = document.getElementById('seasonInput');
 const episodeInput = document.getElementById('episodeInput');
 const seriesPagination = document.getElementById('seriesPagination');
+const seriesSynopsisBox = document.getElementById('seriesSynopsisBox');
 async function startSeriesSearch() {
   seriesResults.innerHTML = '';
   seriesPagination.innerHTML = '';
+  seriesSynopsisBox.innerHTML = ''; // borrar sinopsis previa
   currentSeriesPage = 1;
   currentSeriesTitle = document.getElementById('seriesTitleInput').value.trim();
   if (!currentSeriesTitle) return;
@@ -350,10 +352,11 @@ async function searchSeries(page) {
           <p><strong>Género:</strong> ${details.genres.map(g => g.name).join(', ')}</p>
           <p><strong>Temporadas:</strong> ${details.number_of_seasons}</p>
           <p><strong>País:</strong> ${details.origin_country.join(', ')}</p>
-          <p><strong>Sinopsis:</strong> ${details.overview}</p>
           <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(details.name + ' trailer')}" target="_blank">▶️ Ver tráiler</a>
           </div>`;
         seriesResults.appendChild(expanded);
+        // Mostrar sinopsis en el recuadro debajo del reproductor con "Sinopsis:" en negrita
+        seriesSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || 'Sinopsis no disponible.'}`;
         const externalIdsUrl = `${tmdbBaseURL}/tv/${series.id}/external_ids?api_key=${tmdbApiKey}`;
         const extRes = await fetch(externalIdsUrl);
         const externalIds = await extRes.json();
@@ -423,8 +426,6 @@ function updatePagination(paginationEl, type) {
 </script>
 </body>
 </html>
-
-
 
 
 
