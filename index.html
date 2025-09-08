@@ -140,7 +140,9 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
   flex-wrap: wrap;
   gap: 12px;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  gap: 12px;
+  align-items: center;
 }
 #playerContainer, #seriesPlayerContainer {
   width: 95%;
@@ -160,6 +162,15 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
   position: absolute;
   top: 0;
   left: 0;
+}
+select#playerSelector, select#playerSelectorSeries {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  background: #001a33;
+  color: #fff;
+  cursor: pointer;
 }
 #cineOverlay, #cineOverlaySeries {
   position: fixed;
@@ -198,6 +209,16 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
 }
 #cineReloadBtn, #cineReloadBtnSeries { left: 20px; }
 #cineExitBtn, #cineExitBtnSeries { right: 20px; }
+.movie-synopsis-label, .movie-synopsis-label-series {
+  font-weight: 700;
+  font-size: 16px;
+  margin-right: 6px;
+  color: #6dcff6;
+}
+.movie-synopsis-label {
+  display: inline-block;
+  margin-bottom: 8px;
+}
 </style>
 </head>
 <body>
@@ -218,11 +239,16 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
   <div id="playerWrapper">
     <div id="manualInput">
       <input type="text" id="tmdbInput" placeholder="Introduce código TMDB">
+      <select id="playerSelector" title="Selecciona reproductor">
+        <option value="videasy">Videasy</option>
+        <option value="vidfast">Vidfast</option>
+        <option value="2embed">2Embed</option>
+      </select>
       <button class="action-btn" onclick="loadMovie()">▶️ Cargar película</button>
       <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
     </div>
     <div id="playerContainer">
-      <iframe id="videasyPlayer" src="" width="100%" height="100%" frameborder="0"
+      <iframe id="videoplayer" src="" width="100%" height="100%" frameborder="0"
         allowfullscreen="true" allow="encrypted-media; fullscreen; autoplay" referrerpolicy="no-referrer"></iframe>
     </div>
     <div id="movieSynopsisBox"></div>
@@ -239,13 +265,18 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
   <div id="seriesPlayerWrapper">
     <div id="manualSeriesInput">
       <input type="text" id="seriesTmdbInput" placeholder="Introduce código TMDb">
-      <input type="number" id="seasonInput" placeholder="Temporada" min="1">
-      <input type="number" id="episodeInput" placeholder="Episodio" min="1">
+      <input type="number" id="seasonInput" placeholder="Temporada" min="1" style="width:90px;">
+      <input type="number" id="episodeInput" placeholder="Episodio" min="1" style="width:90px;">
+      <select id="playerSelectorSeries" title="Selecciona reproductor">
+        <option value="videasy">Videasy</option>
+        <option value="vidfast">Vidfast</option>
+        <option value="2embed">2Embed</option>
+      </select>
       <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
       <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
     </div>
     <div id="seriesPlayerContainer">
-      <iframe id="seriesVideasyPlayer" src="" width="100%" height="100%" frameborder="0"
+      <iframe id="seriesVideoplayer" src="" width="100%" height="100%" frameborder="0"
         allowfullscreen="true" allow="encrypted-media; fullscreen; autoplay" referrerpolicy="no-referrer"></iframe>
     </div>
     <div id="seriesSynopsisBox"></div>
@@ -275,11 +306,13 @@ function showMode(mode) {
   document.getElementById('seriesSection').style.display = mode === 'series' ? 'block' : 'none';
 }
 
+// --- PELÍCULAS ---
 const results = document.getElementById('results');
 const tmdbInput = document.getElementById('tmdbInput');
 const moviesPagination = document.getElementById('moviesPagination');
 const movieSynopsisBox = document.getElementById('movieSynopsisBox');
-const videasyPlayer = document.getElementById('videasyPlayer');
+const videoplayer = document.getElementById('videoplayer');
+const playerSelector = document.getElementById('playerSelector');
 
 async function startSearch() {
   results.innerHTML = '';
@@ -296,7 +329,6 @@ document.getElementById('titleInput').addEventListener('keydown', function(event
     startSearch();
   }
 });
-
 async function searchMovie(page) {
   try {
     const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -357,8 +389,8 @@ async function searchMovie(page) {
         expanded.querySelector('.expanded-info').appendChild(buttonsDiv);
         results.appendChild(expanded);
         tmdbInput.value = details.id || '';
-        updateMoviePlayerSrc('');
         movieSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || 'Sinopsis no disponible.'}`;
+        updateMoviePlayerSrc('');
       };
       results.appendChild(card);
     });
@@ -378,21 +410,34 @@ function loadMovie() {
 
 function updateMoviePlayerSrc(tmdbCode) {
   const code = tmdbCode || tmdbInput.value.trim();
-  if (code) {
-    videasyPlayer.src = `https://player.videasy.net/movie/${code}`;
-    videasyPlayer.setAttribute('allowfullscreen', 'true');
-    videasyPlayer.setAttribute('allow', 'encrypted-media; fullscreen; autoplay');
-    videasyPlayer.setAttribute('referrerpolicy', 'no-referrer');
-  } else {
-    videasyPlayer.src = '';
+  const player = playerSelector.value;
+  if (!code) {
+    videoplayer.src = '';
+    return;
   }
+
+  switch(player) {
+    case 'videasy':
+      videoplayer.src = `https://player.videasy.net/movie/${code}`;
+      break;
+    case 'vidfast':
+      videoplayer.src = `https://vidfast.pro/movie/${code}`;
+      break;
+    case '2embed':
+      videoplayer.src = `https://hnembed.cc/embed/movie/${code}`;
+      break;
+    default:
+      videoplayer.src = '';
+  }
+  videoplayer.setAttribute('allowfullscreen', 'true');
+  videoplayer.setAttribute('allow', 'encrypted-media; fullscreen; autoplay');
+  videoplayer.setAttribute('referrerpolicy', 'no-referrer');
 }
 
 function reloadCineMovie() {
   const iframe = document.getElementById('cineIframe');
   iframe.src = iframe.src;
 }
-
 function toggleCineMode() {
   const overlay = document.getElementById('cineOverlay');
   const iframe = document.getElementById('cineIframe');
@@ -401,18 +446,19 @@ function toggleCineMode() {
     iframe.src = '';
   } else {
     overlay.style.display = 'flex';
-    iframe.src = videasyPlayer.src;
+    iframe.src = videoplayer.src;
   }
 }
 
-// SERIES
+// --- SERIES ---
 const seriesResults = document.getElementById('seriesResults');
 const seriesTmdbInput = document.getElementById('seriesTmdbInput');
 const seasonInput = document.getElementById('seasonInput');
 const episodeInput = document.getElementById('episodeInput');
 const seriesPagination = document.getElementById('seriesPagination');
 const seriesSynopsisBox = document.getElementById('seriesSynopsisBox');
-const seriesVideasyPlayer = document.getElementById('seriesVideasyPlayer');
+const seriesVideoplayer = document.getElementById('seriesVideoplayer');
+const playerSelectorSeries = document.getElementById('playerSelectorSeries');
 
 async function startSeriesSearch() {
   seriesResults.innerHTML = '';
@@ -468,7 +514,7 @@ async function searchSeries(page) {
           </div>
         `;
         seriesResults.appendChild(expanded);
-        seriesSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || 'Sinopsis no disponible.'}`;
+        seriesSynopsisBox.innerHTML = `<span class="movie-synopsis-label-series">Sinopsis:</span> ${details.overview || 'Sinopsis no disponible.'}`;
         seriesTmdbInput.value = details.id || '';
         seasonInput.value = '';
         episodeInput.value = '';
@@ -486,14 +532,30 @@ function updateSeriesPlayer() {
   const tmdbCode = seriesTmdbInput.value.trim();
   const season = seasonInput.value.trim();
   const episode = episodeInput.value.trim();
+  const player = playerSelectorSeries.value;
+
   if (!tmdbCode || !season || !episode) {
-    seriesVideasyPlayer.src = '';
+    seriesVideoplayer.src = '';
     return;
   }
-  seriesVideasyPlayer.src = `https://player.videasy.net/tv/${tmdbCode}/${season}/${episode}`;
-  seriesVideasyPlayer.setAttribute('allowfullscreen', 'true');
-  seriesVideasyPlayer.setAttribute('allow', 'encrypted-media; fullscreen; autoplay');
-  seriesVideasyPlayer.setAttribute('referrerpolicy', 'no-referrer');
+
+  switch(player) {
+    case 'videasy':
+      seriesVideoplayer.src = `https://player.videasy.net/tv/${tmdbCode}/${season}/${episode}`;
+      break;
+    case 'vidfast':
+      seriesVideoplayer.src = `https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}`;
+      break;
+    case '2embed':
+      // El formato para 2embed para series puede variar; asumo que es https://hnembed.cc/embed/tv/{tmdbCode}/{season}/{episode}
+      seriesVideoplayer.src = `https://hnembed.cc/embed/tv/${tmdbCode}/${season}/${episode}`;
+      break;
+    default:
+      seriesVideoplayer.src = '';
+  }
+  seriesVideoplayer.setAttribute('allowfullscreen', 'true');
+  seriesVideoplayer.setAttribute('allow', 'encrypted-media; fullscreen; autoplay');
+  seriesVideoplayer.setAttribute('referrerpolicy', 'no-referrer');
 }
 
 function loadSeries() {
@@ -506,7 +568,6 @@ function reloadCineSeries() {
   const iframe = document.getElementById('cineSeriesIframe');
   iframe.src = iframe.src;
 }
-
 function toggleCineModeSeries() {
   const overlay = document.getElementById('cineOverlaySeries');
   const iframe = document.getElementById('cineSeriesIframe');
@@ -515,7 +576,7 @@ function toggleCineModeSeries() {
     iframe.src = '';
   } else {
     overlay.style.display = 'flex';
-    iframe.src = seriesVideasyPlayer.src;
+    iframe.src = seriesVideoplayer.src;
   }
 }
 
