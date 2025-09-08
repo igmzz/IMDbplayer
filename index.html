@@ -200,6 +200,14 @@ async function startSearch() {
   await searchMovie(currentPage);
 }
 
+// 🔹 Permitir buscar con Enter
+document.getElementById('titleInput').addEventListener('keydown', function(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    startSearch();
+  }
+});
+
 async function searchMovie(page) {
   try {
     const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -423,6 +431,8 @@ function updatePagination(paginationEl, type) {
 </script>
 </body>
 </html>
+
+
 
 
 
