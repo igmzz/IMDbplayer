@@ -62,7 +62,7 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
 .title {
   padding: 10px 12px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 12px;      /* Se reduce tamaño de fuente */
   color: #aad8ff;
   text-align: center;
   user-select: none;
@@ -300,12 +300,10 @@ const tmdbApiKey = 'b60c8fb1893bba0f1380297e7a40257e';
 const tmdbBaseURL = 'https://api.themoviedb.org/3';
 let currentPage = 1, totalPages = 1, currentTitle = '';
 let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = '';
-
 function showMode(mode) {
   document.getElementById('moviesSection').style.display = mode === 'movies' ? 'block' : 'none';
   document.getElementById('seriesSection').style.display = mode === 'series' ? 'block' : 'none';
 }
-
 // --- PELÍCULAS ---
 const results = document.getElementById('results');
 const tmdbInput = document.getElementById('tmdbInput');
@@ -313,7 +311,6 @@ const moviesPagination = document.getElementById('moviesPagination');
 const movieSynopsisBox = document.getElementById('movieSynopsisBox');
 const videoplayer = document.getElementById('videoplayer');
 const playerSelector = document.getElementById('playerSelector');
-
 async function startSearch() {
   results.innerHTML = '';
   moviesPagination.innerHTML = '';
@@ -399,7 +396,6 @@ async function searchMovie(page) {
     moviesPagination.innerHTML = '';
   }
 }
-
 function loadMovie() {
   const code = tmdbInput.value.trim();
   if (code) {
@@ -407,7 +403,6 @@ function loadMovie() {
     movieSynopsisBox.innerHTML = '';
   }
 }
-
 function updateMoviePlayerSrc(tmdbCode) {
   const code = tmdbCode || tmdbInput.value.trim();
   const player = playerSelector.value;
@@ -415,7 +410,6 @@ function updateMoviePlayerSrc(tmdbCode) {
     videoplayer.src = '';
     return;
   }
-
   switch(player) {
     case 'videasy':
       videoplayer.src = `https://player.videasy.net/movie/${code}`;
@@ -433,7 +427,6 @@ function updateMoviePlayerSrc(tmdbCode) {
   videoplayer.setAttribute('allow', 'encrypted-media; fullscreen; autoplay');
   videoplayer.setAttribute('referrerpolicy', 'no-referrer');
 }
-
 function reloadCineMovie() {
   const iframe = document.getElementById('cineIframe');
   iframe.src = iframe.src;
@@ -449,7 +442,6 @@ function toggleCineMode() {
     iframe.src = videoplayer.src;
   }
 }
-
 // --- SERIES ---
 const seriesResults = document.getElementById('seriesResults');
 const seriesTmdbInput = document.getElementById('seriesTmdbInput');
@@ -459,7 +451,6 @@ const seriesPagination = document.getElementById('seriesPagination');
 const seriesSynopsisBox = document.getElementById('seriesSynopsisBox');
 const seriesVideoplayer = document.getElementById('seriesVideoplayer');
 const playerSelectorSeries = document.getElementById('playerSelectorSeries');
-
 async function startSeriesSearch() {
   seriesResults.innerHTML = '';
   seriesPagination.innerHTML = '';
@@ -469,7 +460,6 @@ async function startSeriesSearch() {
   if (!currentSeriesTitle) return;
   await searchSeries(currentSeriesPage);
 }
-
 async function searchSeries(page) {
   try {
     const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
@@ -527,18 +517,15 @@ async function searchSeries(page) {
     seriesPagination.innerHTML = '';
   }
 }
-
 function updateSeriesPlayer() {
   const tmdbCode = seriesTmdbInput.value.trim();
   const season = seasonInput.value.trim();
   const episode = episodeInput.value.trim();
   const player = playerSelectorSeries.value;
-
   if (!tmdbCode || !season || !episode) {
     seriesVideoplayer.src = '';
     return;
   }
-
   switch(player) {
     case 'videasy':
       seriesVideoplayer.src = `https://player.videasy.net/tv/${tmdbCode}/${season}/${episode}`;
@@ -547,7 +534,6 @@ function updateSeriesPlayer() {
       seriesVideoplayer.src = `https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}`;
       break;
     case '2embed':
-      // El formato para 2embed para series puede variar; asumo que es https://hnembed.cc/embed/tv/{tmdbCode}/{season}/{episode}
       seriesVideoplayer.src = `https://hnembed.cc/embed/tv/${tmdbCode}/${season}/${episode}`;
       break;
     default:
@@ -557,13 +543,11 @@ function updateSeriesPlayer() {
   seriesVideoplayer.setAttribute('allow', 'encrypted-media; fullscreen; autoplay');
   seriesVideoplayer.setAttribute('referrerpolicy', 'no-referrer');
 }
-
 function loadSeries() {
   updateSeriesPlayer();
 }
 seasonInput.addEventListener('input', updateSeriesPlayer);
 episodeInput.addEventListener('input', updateSeriesPlayer);
-
 function reloadCineSeries() {
   const iframe = document.getElementById('cineSeriesIframe');
   iframe.src = iframe.src;
@@ -579,7 +563,6 @@ function toggleCineModeSeries() {
     iframe.src = seriesVideoplayer.src;
   }
 }
-
 function updatePagination(paginationEl, type) {
   paginationEl.innerHTML = '';
   const prevBtn = document.createElement('button');
@@ -602,12 +585,10 @@ function updatePagination(paginationEl, type) {
   paginationEl.appendChild(prevBtn);
   paginationEl.appendChild(nextBtn);
 }
-
 showMode('movies');
 </script>
 </body>
 </html>
-
 
 
 
