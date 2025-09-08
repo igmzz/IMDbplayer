@@ -6,7 +6,6 @@
 <link rel="icon" href="carrete-de-pelicula.ico" type="image/x-icon">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* Estilos previos sin cambios */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
 html, body { height: 100%; width: 100%; overflow-y: scroll; scroll-behavior: smooth; background-color: black; }
 body {
@@ -27,7 +26,6 @@ input::placeholder { color:#bbb; }
 input:focus { background: rgba(0,25,50,0.8); transform:scale(1.02); }
 button.action-btn { padding:16px 24px; font-size:18px; border-radius:12px; background:#00395a; color:#fff; cursor:pointer; transition:all 0.3s ease; }
 button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0,0,0.6); }
-/* Nuevo estilo tarjetas carátulas */
 #results, #seriesResults {
   display: flex;
   flex-wrap: wrap;
@@ -75,7 +73,6 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-/* Detalle expandido igual que antes (sin cambios) */
 .expanded-card {
   display: flex;
   flex-direction: column;
@@ -132,7 +129,6 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
 .expanded-buttons a:last-child:hover {
   color: #aad8ff;
 }
-/* resto del estilo y reproductor igual */
 #playerWrapper, #seriesPlayerWrapper {
   margin-top: 20px;
   display: flex;
@@ -165,7 +161,6 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
   top: 0;
   left: 0;
 }
-/* Modo Cine oculto por defecto y centrado */
 #cineOverlay, #cineOverlaySeries {
   position: fixed;
   top: 0; left: 0;
@@ -227,7 +222,8 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
       <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
     </div>
     <div id="playerContainer">
-      <iframe id="videasyPlayer" src="" allowfullscreen allow="encrypted-media"></iframe>
+      <iframe id="videasyPlayer" src="" width="100%" height="100%" frameborder="0"
+        allowfullscreen="true" allow="encrypted-media; fullscreen; autoplay" referrerpolicy="no-referrer"></iframe>
     </div>
     <div id="movieSynopsisBox"></div>
   </div>
@@ -249,7 +245,8 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
       <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
     </div>
     <div id="seriesPlayerContainer">
-      <iframe id="seriesVideasyPlayer" src="" allowfullscreen allow="encrypted-media"></iframe>
+      <iframe id="seriesVideasyPlayer" src="" width="100%" height="100%" frameborder="0"
+        allowfullscreen="true" allow="encrypted-media; fullscreen; autoplay" referrerpolicy="no-referrer"></iframe>
     </div>
     <div id="seriesSynopsisBox"></div>
   </div>
@@ -259,13 +256,13 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
 <div id="cineOverlay">
   <button id="cineReloadBtn" onclick="reloadCineMovie()">🔄 Recargar</button>
   <button id="cineExitBtn" onclick="toggleCineMode()">⏎ Salir</button>
-  <iframe id="cineIframe" allowfullscreen allow="encrypted-media"></iframe>
+  <iframe id="cineIframe" allowfullscreen allow="encrypted-media; fullscreen; autoplay" referrerpolicy="no-referrer"></iframe>
 </div>
 <!-- Overlays Cine Series -->
 <div id="cineOverlaySeries">
   <button id="cineReloadBtnSeries" onclick="reloadCineSeries()">🔄 Recargar</button>
   <button id="cineExitBtnSeries" onclick="toggleCineModeSeries()">⏎ Salir</button>
-  <iframe id="cineSeriesIframe" allowfullscreen allow="encrypted-media"></iframe>
+  <iframe id="cineSeriesIframe" allowfullscreen allow="encrypted-media; fullscreen; autoplay" referrerpolicy="no-referrer"></iframe>
 </div>
 <script>
 const tmdbApiKey = 'b60c8fb1893bba0f1380297e7a40257e';
@@ -273,13 +270,11 @@ const tmdbBaseURL = 'https://api.themoviedb.org/3';
 let currentPage = 1, totalPages = 1, currentTitle = '';
 let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = '';
 
-// Función para mostrar secciones según modo
 function showMode(mode) {
   document.getElementById('moviesSection').style.display = mode === 'movies' ? 'block' : 'none';
   document.getElementById('seriesSection').style.display = mode === 'series' ? 'block' : 'none';
 }
 
-// Variables películas
 const results = document.getElementById('results');
 const tmdbInput = document.getElementById('tmdbInput');
 const moviesPagination = document.getElementById('moviesPagination');
@@ -295,7 +290,6 @@ async function startSearch() {
   if (!currentTitle) return;
   await searchMovie(currentPage);
 }
-
 document.getElementById('titleInput').addEventListener('keydown', function(event) {
   if (event.key === 'Enter') {
     event.preventDefault();
@@ -386,6 +380,9 @@ function updateMoviePlayerSrc(tmdbCode) {
   const code = tmdbCode || tmdbInput.value.trim();
   if (code) {
     videasyPlayer.src = `https://player.videasy.net/movie/${code}`;
+    videasyPlayer.setAttribute('allowfullscreen', 'true');
+    videasyPlayer.setAttribute('allow', 'encrypted-media; fullscreen; autoplay');
+    videasyPlayer.setAttribute('referrerpolicy', 'no-referrer');
   } else {
     videasyPlayer.src = '';
   }
@@ -493,14 +490,15 @@ function updateSeriesPlayer() {
     seriesVideasyPlayer.src = '';
     return;
   }
-  // URL para series: https://player.videasy.net/tv/show_id/season/episode
   seriesVideasyPlayer.src = `https://player.videasy.net/tv/${tmdbCode}/${season}/${episode}`;
+  seriesVideasyPlayer.setAttribute('allowfullscreen', 'true');
+  seriesVideasyPlayer.setAttribute('allow', 'encrypted-media; fullscreen; autoplay');
+  seriesVideasyPlayer.setAttribute('referrerpolicy', 'no-referrer');
 }
 
 function loadSeries() {
   updateSeriesPlayer();
 }
-
 seasonInput.addEventListener('input', updateSeriesPlayer);
 episodeInput.addEventListener('input', updateSeriesPlayer);
 
