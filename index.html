@@ -358,8 +358,6 @@
             <option value="vidjoy">Vidjoy</option>
             <option value="vidlink">Vidlink</option>
             <option value="vidsrc">VidSrc</option>
-            <option value="mappleDirect">Mapple</option>
-            <option value="vidora">Vidora</option>
             <option value="embedsu">Embedsu</option>
           </select>
           <button class="action-btn" id="searchBtn" onclick="loadMovie()">▶️ Cargar película</button>
@@ -391,8 +389,6 @@
             <option value="vidsrc">VidSrc</option>
             <option value="vidlink">Vidlink</option>
             <option value="embedsu">Embedsu</option>
-            <option value="vidora">Vidora</option>
-            <option value="mappleDirect">Mapple</option>
           </select>
           <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
           <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
@@ -542,12 +538,6 @@
       case "vidsrc":
         videoplayer.src = `https://vidsrc.me/embed/movie?tmdb=${code}`;
         break;
-      case "mappleDirect":
-        videoplayer.src = `https://mappletv.uk/watch/movie/${code}?autoPlay=true&title=true&poster=true&startAt=0&theme=%23ffffff`;
-        break;
-      case "vidora":
-        videoplayer.src = `https://vidora.su/movie/${code}`;
-        break;
       case "embedsu":
         videoplayer.src = `https://embed.su/embed/movie/${code}`;
         break;
@@ -671,9 +661,6 @@
       return;
     }
     switch (player) {
-      case "mappleDirect":
-        seriesVideoplayer.src = `https://mappletv.uk/watch/tv/${tmdbCode}/${season}/${episode}?autoPlay=true&title=true&poster=true&startAt=0&theme=%23ffffff`;
-        break;
       case "videasy":
         seriesVideoplayer.src = `https://player.videasy.net/tv/${tmdbCode}/${season}/${episode}`;
         break;
@@ -688,9 +675,6 @@
         break;
       case "embedsu":
         seriesVideoplayer.src = `https://embed.su/embed/tv/${tmdbCode}/${season}/${episode}`;
-        break;
-      case "vidora":
-        seriesVideoplayer.src = `https://vidora.su/tv/${tmdbCode}/${season}/${episode}`;
         break;
       default:
         seriesVideoplayer.src = "";
@@ -752,7 +736,6 @@
     paginationEl.appendChild(nextBtn);
   }
   showMode("movies");
-
   // Funcion para activar fullscreen del contenedor del reproductor
   function toggleFullScreen(container) {
     if (!document.fullscreenElement) {
@@ -769,7 +752,6 @@
       }
     }
   }
-
   // Añadir evento onclick en boton fullscreen películas
   const fullscreenBtn = document.getElementById("fullscreenBtn");
   const iframeWrapper = document.getElementById("iframeWrapper");
@@ -777,7 +759,6 @@
     e.stopPropagation(); // Para que no afecte si se hace clic en iframe
     toggleFullScreen(iframeWrapper);
   });
-
   // Añadir evento onclick en boton fullscreen series
   const fullscreenBtnSeries = document.getElementById("fullscreenBtnSeries");
   const seriesIframeWrapper = document.getElementById("seriesIframeWrapper");
@@ -788,6 +769,7 @@
 </script>
 </body>
 </html>
+
 
 
 
