@@ -226,7 +226,6 @@
     flex-direction: column;
     align-items: center;
   }
-
   .player-container-wrapper {
     position: relative;
     width: 860px;
@@ -263,27 +262,6 @@
   #fullscreenBtnSeries:hover {
     background-color: #1e7e34;
   }
-
-  /* Botón rojo pequeño esquina inferior izquierda */
-  #exitPlayerBtn,
-  #exitSeriesPlayerBtn {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    background-color: #dc3545;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    bottom: 10px;
-    left: 10px;
-    transition: background-color 0.3s ease;
-    z-index: 1000;
-  }
-  #exitPlayerBtn:hover,
-  #exitSeriesPlayerBtn:hover {
-    background-color: #a71d2a;
-  }
-
   select#playerSelector,
   select#playerSelectorSeries {
     padding: 10px 14px;
@@ -363,7 +341,6 @@
       <button onclick="showMode('movies')">Películas 🎬</button>
       <button onclick="showMode('series')">Series 📺</button>
     </div>
-
     <!-- PELÍCULAS -->
     <div id="moviesSection" style="display:none;">
       <div id="searchContainer">
@@ -376,26 +353,25 @@
         <div id="manualInput">
           <input type="text" id="tmdbInput" placeholder="Introduce código TMDB" />
           <select id="playerSelector" title="Selecciona reproductor">
-            <option value="videasy">Videasy</option>
             <option value="vidfast">Vidfast</option>
-            <option value="vidsrc">VidSrc</option>
+            <option value="videasy">Videasy</option>
+            <option value="vidjoy">Vidjoy</option>
             <option value="vidlink">Vidlink</option>
-            <option value="embedsu">Embedsu</option>
-            <option value="vidora">Vidora</option>
+            <option value="vidsrc">VidSrc</option>
             <option value="mappleDirect">Mapple</option>
+            <option value="vidora">Vidora</option>
+            <option value="embedsu">Embedsu</option>
           </select>
-          <button class="action-btn" onclick="loadMovie()">▶️ Cargar película</button>
+          <button class="action-btn" id="searchBtn" onclick="loadMovie()">▶️ Cargar película</button>
           <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
         </div>
         <div class="player-container-wrapper" id="iframeWrapper">
-          <button id="exitPlayerBtn" title="Salir de pantalla completa"></button>
           <iframe id="videoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtn" title="Pantalla completa"></button>
         </div>
         <div id="movieSynopsisBox"></div>
       </div>
     </div>
-
     <!-- SERIES -->
     <div id="seriesSection" style="display:none;">
       <div id="searchSeriesContainer">
@@ -407,20 +383,8 @@
       <div id="seriesPlayerWrapper">
         <div id="manualSeriesInput">
           <input type="text" id="seriesTmdbInput" placeholder="Introduce código TMDb" />
-          <input
-            type="number"
-            id="seasonInput"
-            placeholder="Temporada"
-            min="1"
-            style="width: 90px"
-          />
-          <input
-            type="number"
-            id="episodeInput"
-            placeholder="Episodio"
-            min="1"
-            style="width: 90px"
-          />
+          <input type="number" id="seasonInput" placeholder="Temporada" min="1" style="width: 90px" />
+          <input type="number" id="episodeInput" placeholder="Episodio" min="1" style="width: 90px" />
           <select id="playerSelectorSeries" title="Selecciona reproductor">
             <option value="videasy">Videasy</option>
             <option value="vidfast">Vidfast</option>
@@ -434,7 +398,6 @@
           <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
         </div>
         <div class="player-container-wrapper" id="seriesIframeWrapper">
-          <button id="exitSeriesPlayerBtn" title="Salir de pantalla completa"></button>
           <iframe id="seriesVideoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtnSeries" title="Pantalla completa"></button>
         </div>
@@ -442,46 +405,30 @@
       </div>
     </div>
   </div>
-
-  <!-- Overlays Cine Películas -->
   <div id="cineOverlay">
     <button id="cineReloadBtn" onclick="reloadCineMovie()">🔄 Recargar</button>
     <button id="cineExitBtn" onclick="toggleCineMode()">⏎ Salir</button>
     <iframe id="cineIframe" allowfullscreen allow="autoplay; fullscreen"></iframe>
   </div>
-  <!-- Overlays Cine Series -->
   <div id="cineOverlaySeries">
     <button id="cineReloadBtnSeries" onclick="reloadCineSeries()">🔄 Recargar</button>
     <button id="cineExitBtnSeries" onclick="toggleCineModeSeries()">⏎ Salir</button>
     <iframe id="cineSeriesIframe" allowfullscreen allow="autoplay; fullscreen"></iframe>
   </div>
-
 <script>
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
-  let currentPage = 1,
-    totalPages = 1,
-    currentTitle = "";
-  let currentSeriesPage = 1,
-    totalSeriesPages = 1,
-    currentSeriesTitle = "";
+  let currentPage = 1, totalPages = 1, currentTitle = "";
+  let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = "";
 
   function slugify(text) {
-    return text
-      .toString()
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9 -]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "");
+    return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
   }
+
   function showMode(mode) {
-    document.getElementById("moviesSection").style.display =
-      mode === "movies" ? "block" : "none";
-    document.getElementById("seriesSection").style.display =
-      mode === "series" ? "block" : "none";
+    document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
+    document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
   }
 
   // --- PELÍCULAS ---
@@ -501,6 +448,7 @@
     if (!currentTitle) return;
     await searchMovie(currentPage);
   }
+
   document.getElementById("searchBtn").addEventListener("click", startSearch);
   document.getElementById("titleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -511,10 +459,9 @@
 
   async function searchMovie(page) {
     try {
-      const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(
-        currentTitle
-      )}&page=${page}&language=es-ES`;
+      const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
       const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
       const data = await response.json();
       if (!data.results || data.results.length === 0) {
         results.innerHTML = "<p>No se encontraron resultados.</p>";
@@ -527,12 +474,8 @@
       data.results.forEach((movie) => {
         const card = document.createElement("div");
         card.className = "card";
-        const poster = movie.poster_path
-          ? `https://image.tmdb.org/t/p/w200${movie.poster_path}`
-          : "https://via.placeholder.com/140x200?text=No+Image";
-        card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${movie.title} (${
-          movie.release_date ? movie.release_date.slice(0, 4) : "---"
-        })</div>`;
+        const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : "---"})</div>`;
         card.onclick = async () => {
           results.innerHTML = "";
           moviesPagination.innerHTML = "";
@@ -541,67 +484,40 @@
           expanded.className = "expanded-card";
           const detailsUrl = `${tmdbBaseURL}/movie/${movie.id}?api_key=${tmdbApiKey}&language=es-ES&append_to_response=credits,external_ids`;
           const detailsRes = await fetch(detailsUrl);
+          if (!detailsRes.ok) {
+            results.innerHTML = "<p>Error al cargar detalles de la película.</p>";
+            return;
+          }
           const details = await detailsRes.json();
-          const posterLarge = details.poster_path
-            ? `https://image.tmdb.org/t/p/w300${details.poster_path}`
-            : "https://via.placeholder.com/150x225?text=No+Image";
-          const director = details.credits.crew.find((c) => c.job === "Director");
-          const cast = details.credits.cast
-            .slice(0, 5)
-            .map((c) => c.name)
-            .join(", ");
+          const posterLarge = details.poster_path ? `https://image.tmdb.org/t/p/w300${details.poster_path}` : "https://via.placeholder.com/150x225?text=No+Image";
+          const director = details.credits.crew.find(c => c.job === "Director");
+          const cast = details.credits.cast.slice(0,5).map(c => c.name).join(", ");
           expanded.innerHTML = `
-          <img src="${posterLarge}">
-          <div class="expanded-info">
-            <h3>${details.title} (${
-            details.release_date ? details.release_date.slice(0, 4) : "---"
-          })</h3>
-            <p><strong>Director:</strong> ${director ? director.name : "N/D"}</p>
-            <p><strong>Reparto:</strong> ${cast}</p>
-            <p><strong>IMDb:</strong> <span style="color:limegreen;">${
-              details.vote_average
-            }</span></p>
-            <p><strong>Género:</strong> ${details.genres
-              .map((g) => g.name)
-              .join(", ")}</p>
-            <p><strong>Duración:</strong> ${details.runtime} min</p>
-            <p><strong>País:</strong> ${details.production_countries
-              .map((c) => c.name)
-              .join(", ")}</p>
-          </div>
-        `;
-          const buttonsDiv = document.createElement("div");
-          buttonsDiv.className = "expanded-buttons";
-          const trailerLink = document.createElement("a");
-          trailerLink.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(
-            details.title + " trailer"
-          )}`;
-          trailerLink.target = "_blank";
-          trailerLink.textContent = "▶️ Ver tráiler";
-          const imdbNum = details.external_ids.imdb_id
-            ? details.external_ids.imdb_id.replace("tt", "")
-            : "";
-          const openSubtitlesUrl = `https://www.opensubtitles.org/es/search/sublanguageid-spa%2Ceng/imdbid-${imdbNum}`;
-          const subLink = document.createElement("a");
-          subLink.href = openSubtitlesUrl;
-          subLink.target = "_blank";
-          subLink.rel = "noopener noreferrer";
-          subLink.textContent = "Subtítulos (ES/EN)";
-          buttonsDiv.appendChild(trailerLink);
-          buttonsDiv.appendChild(subLink);
-          expanded.querySelector(".expanded-info").appendChild(buttonsDiv);
+            <img src="${posterLarge}">
+            <div class="expanded-info">
+              <h3>${details.title} (${details.release_date ? details.release_date.slice(0,4) : "---"})</h3>
+              <p><strong>Director:</strong> ${director ? director.name : "N/D"}</p>
+              <p><strong>Reparto:</strong> ${cast}</p>
+              <p><strong>IMDb:</strong> <span style="color:limegreen">${details.vote_average}</span></p>
+              <p><strong>Género:</strong> ${details.genres.map(g => g.name).join(", ")}</p>
+              <p><strong>Duración:</strong> ${details.runtime} min</p>
+              <p><strong>País:</strong> ${details.production_countries.map(c => c.name).join(", ")}</p>
+            </div>
+            <div class="expanded-buttons">
+              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(details.title + " trailer")}" target="_blank">▶️ Ver tráiler</a>
+              <a href="https://www.opensubtitles.org/es/search/sublanguageid-spa%2Ceng/imdbid-${details.external_ids.imdb_id ? details.external_ids.imdb_id.replace("tt", "") : ""}" target="_blank" rel="noopener noreferrer">Subtítulos (ES/EN)</a>
+            </div>
+          `;
           results.appendChild(expanded);
           tmdbInput.value = details.id || "";
           tmdbInput.setAttribute("data-title", slugify(details.title));
-          movieSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${
-            details.overview || "Sinopsis no disponible."
-          }`;
+          movieSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || "Sinopsis no disponible."}`;
           updateMoviePlayerSrc("");
         };
         results.appendChild(card);
       });
     } catch (error) {
-      results.innerHTML = "<p>Error al buscar películas.</p>";
+      results.innerHTML = `<p>Error al buscar películas: ${error.message}</p>`;
       moviesPagination.innerHTML = "";
     }
   }
@@ -609,6 +525,7 @@
   function loadMovie() {
     updateMoviePlayerSrc();
   }
+
   function updateMoviePlayerSrc(tmdbCode) {
     const code = tmdbCode || tmdbInput.value.trim();
     const player = playerSelector.value;
@@ -618,26 +535,29 @@
       return;
     }
     switch (player) {
-      case "mappleDirect":
-        videoplayer.src = `https://mappletv.uk/watch/movie/${code}?autoPlay=true&title=true&poster=true&startAt=0&theme=%23ffffff`;
+      case "vidfast":
+        videoplayer.src = `https://vidfast.pro/movie/${code}`;
         break;
       case "videasy":
         videoplayer.src = `https://player.videasy.net/movie/${code}`;
         break;
-      case "vidfast":
-        videoplayer.src = `https://vidfast.pro/movie/${code}`;
-        break;
-      case "vidsrc":
-        videoplayer.src = `https://vidsrc.me/embed/movie?tmdb=${code}`;
+      case "vidjoy":
+        videoplayer.src = `https://vidjoy.pro/embed/movie/${code}`;
         break;
       case "vidlink":
         videoplayer.src = `https://vidlink.pro/movie/${code}`;
         break;
-      case "embedsu":
-        videoplayer.src = `https://embed.su/embed/movie/${code}`;
+      case "vidsrc":
+        videoplayer.src = `https://vidsrc.me/embed/movie?tmdb=${code}`;
+        break;
+      case "mappleDirect":
+        videoplayer.src = `https://mappletv.uk/watch/movie/${code}?autoPlay=true&title=true&poster=true&startAt=0&theme=%23ffffff`;
         break;
       case "vidora":
         videoplayer.src = `https://vidora.su/movie/${code}`;
+        break;
+      case "embedsu":
+        videoplayer.src = `https://embed.su/embed/movie/${code}`;
         break;
       default:
         videoplayer.src = "";
@@ -649,6 +569,7 @@
     const iframe = document.getElementById("cineIframe");
     iframe.src = iframe.src;
   }
+
   function toggleCineMode() {
     const overlay = document.getElementById("cineOverlay");
     const iframe = document.getElementById("cineIframe");
@@ -680,22 +601,20 @@
     if (!currentSeriesTitle) return;
     await searchSeries(currentSeriesPage);
   }
+
   document.getElementById("searchSeriesBtn").addEventListener("click", startSeriesSearch);
-  document
-    .getElementById("seriesTitleInput")
-    .addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        startSeriesSearch();
-      }
-    });
+  document.getElementById("seriesTitleInput").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      startSeriesSearch();
+    }
+  });
 
   async function searchSeries(page) {
     try {
-      const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(
-        currentSeriesTitle
-      )}&page=${page}&language=es-ES`;
+      const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
       const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
       const data = await response.json();
       if (!data.results || data.results.length === 0) {
         seriesResults.innerHTML = "<p>No se encontraron resultados.</p>";
@@ -708,12 +627,8 @@
       data.results.forEach((series) => {
         const card = document.createElement("div");
         card.className = "card";
-        const poster = series.poster_path
-          ? `https://image.tmdb.org/t/p/w200${series.poster_path}`
-          : "https://via.placeholder.com/140x200?text=No+Image";
-        card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${series.name} (${
-          series.first_air_date ? series.first_air_date.slice(0, 4) : "---"
-        })</div>`;
+        const poster = series.poster_path ? `https://image.tmdb.org/t/p/w200${series.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${series.name} (${series.first_air_date ? series.first_air_date.slice(0,4) : "---"})</div>`;
         card.onclick = async () => {
           seriesResults.innerHTML = "";
           seriesPagination.innerHTML = "";
@@ -722,41 +637,29 @@
           expanded.className = "expanded-card";
           const detailsUrl = `${tmdbBaseURL}/tv/${series.id}?api_key=${tmdbApiKey}&language=es-ES&append_to_response=credits,external_ids`;
           const detailsRes = await fetch(detailsUrl);
+          if (!detailsRes.ok) {
+            seriesResults.innerHTML = "<p>Error al cargar detalles de la serie.</p>";
+            return;
+          }
           const details = await detailsRes.json();
-          const posterLarge = details.poster_path
-            ? `https://image.tmdb.org/t/p/w300${details.poster_path}`
-            : "https://via.placeholder.com/150x225?text=No+Image";
-          const director =
-            details.created_by.length > 0 ? details.created_by[0].name : "N/D";
-          const cast = details.credits.cast
-            .slice(0, 5)
-            .map((c) => c.name)
-            .join(", ");
+          const posterLarge = details.poster_path ? `https://image.tmdb.org/t/p/w300${details.poster_path}` : "https://via.placeholder.com/150x225?text=No+Image";
+          const director = details.created_by.length > 0 ? details.created_by[0].name : "N/D";
+          const cast = details.credits.cast.slice(0,5).map(c => c.name).join(", ");
           expanded.innerHTML = `
-          <img src="${posterLarge}">
-          <div class="expanded-info">
-            <h3>${details.name} (${
-            details.first_air_date ? details.first_air_date.slice(0, 4) : "---"
-          })</h3>
-            <p><strong>Creador:</strong> ${director}</p>
-            <p><strong>Reparto:</strong> ${cast}</p>
-            <p><strong>IMDb:</strong> <span style="color:limegreen;">${
-              details.vote_average
-            }</span></p>
-            <p><strong>Género:</strong> ${details.genres
-              .map((g) => g.name)
-              .join(", ")}</p>
-            <p><strong>Temporadas:</strong> ${details.number_of_seasons}</p>
-            <p><strong>País:</strong> ${details.origin_country.join(", ")}</p>
-            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(
-              details.name + " trailer"
-            )}" target="_blank">▶️ Ver tráiler</a>
-          </div>
-        `;
+            <img src="${posterLarge}">
+            <div class="expanded-info">
+              <h3>${details.name} (${details.first_air_date ? details.first_air_date.slice(0,4) : "---"})</h3>
+              <p><strong>Creador:</strong> ${director}</p>
+              <p><strong>Reparto:</strong> ${cast}</p>
+              <p><strong>IMDb:</strong> <span style="color:limegreen">${details.vote_average}</span></p>
+              <p><strong>Género:</strong> ${details.genres.map(g => g.name).join(", ")}</p>
+              <p><strong>Temporadas:</strong> ${details.number_of_seasons}</p>
+              <p><strong>País:</strong> ${details.origin_country.join(", ")}</p>
+              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(details.name + " trailer")}" target="_blank">▶️ Ver tráiler</a>
+            </div>
+          `;
           seriesResults.appendChild(expanded);
-          seriesSynopsisBox.innerHTML = `<span class="movie-synopsis-label-series">Sinopsis:</span> ${
-            details.overview || "Sinopsis no disponible."
-          }`;
+          seriesSynopsisBox.innerHTML = `<span class="movie-synopsis-label-series">Sinopsis:</span> ${details.overview || "Sinopsis no disponible."}`;
           seriesTmdbInput.value = details.id || "";
           seriesTmdbInput.setAttribute("data-title", slugify(details.name));
           seasonInput.value = "";
@@ -766,7 +669,7 @@
         seriesResults.appendChild(card);
       });
     } catch (error) {
-      seriesResults.innerHTML = "<p>Error al buscar series.</p>";
+      seriesResults.innerHTML = `<p>Error al buscar series: ${error.message}</p>`;
       seriesPagination.innerHTML = "";
     }
   }
@@ -807,8 +710,7 @@
       default:
         seriesVideoplayer.src = "";
     }
-    document.getElementById("seriesIframeWrapper").style.display =
-      tmdbCode && season && episode ? "block" : "none";
+    document.getElementById("seriesIframeWrapper").style.display = tmdbCode && season && episode ? "block" : "none";
   }
 
   function loadSeries() {
@@ -868,64 +770,12 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
+
   showMode("movies");
-
-  function toggleFullscreen(element) {
-    if (!document.fullscreenElement) {
-      if (element.requestFullscreen) {
-        element.requestFullscreen();
-      } else if (element.mozRequestFullScreen) {
-        element.mozRequestFullScreen();
-      } else if (element.webkitRequestFullscreen) {
-        element.webkitRequestFullscreen();
-      } else if (element.msRequestFullscreen) {
-        element.msRequestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-      }
-    }
-  }
-
-  // Botón fullscreen verde películas (toggle)
-  document.getElementById("fullscreenBtn").addEventListener("click", () => {
-    const playerWrapper = document.getElementById("iframeWrapper");
-    toggleFullscreen(playerWrapper);
-  });
-
-  // Botón fullscreen verde series (toggle)
-  document.getElementById("fullscreenBtnSeries").addEventListener("click", () => {
-    const playerWrapper = document.getElementById("seriesIframeWrapper");
-    toggleFullscreen(playerWrapper);
-  });
-
-  // Botón rojo sale de pantalla completa y hace scroll abajo de la web
-  document.getElementById("exitPlayerBtn").addEventListener("click", () => {
-    if (document.fullscreenElement) {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-  });
-  document.getElementById("exitSeriesPlayerBtn").addEventListener("click", () => {
-    if (document.fullscreenElement) {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    }
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-  });
 </script>
 </body>
 </html>
+
 
 
 
