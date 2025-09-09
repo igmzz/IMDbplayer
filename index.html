@@ -247,8 +247,8 @@
   #fullscreenBtn,
   #fullscreenBtnSeries {
     position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     background-color: #28a745;
     border-radius: 50%;
     border: none;
@@ -420,17 +420,14 @@
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPage = 1, totalPages = 1, currentTitle = "";
   let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = "";
-
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
   }
-
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
     document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
   }
-
   // --- PELÍCULAS ---
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
@@ -438,7 +435,6 @@
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
   const videoplayer = document.getElementById("videoplayer");
   const playerSelector = document.getElementById("playerSelector");
-
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -448,7 +444,6 @@
     if (!currentTitle) return;
     await searchMovie(currentPage);
   }
-
   document.getElementById("searchBtn").addEventListener("click", startSearch);
   document.getElementById("titleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -456,7 +451,6 @@
       startSearch();
     }
   });
-
   async function searchMovie(page) {
     try {
       const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -521,11 +515,9 @@
       moviesPagination.innerHTML = "";
     }
   }
-
   function loadMovie() {
     updateMoviePlayerSrc();
   }
-
   function updateMoviePlayerSrc(tmdbCode) {
     const code = tmdbCode || tmdbInput.value.trim();
     const player = playerSelector.value;
@@ -564,12 +556,10 @@
     }
     document.getElementById("iframeWrapper").style.display = code ? "block" : "none";
   }
-
   function reloadCineMovie() {
     const iframe = document.getElementById("cineIframe");
     iframe.src = iframe.src;
   }
-
   function toggleCineMode() {
     const overlay = document.getElementById("cineOverlay");
     const iframe = document.getElementById("cineIframe");
@@ -581,7 +571,6 @@
       iframe.src = videoplayer.src;
     }
   }
-
   // --- SERIES ---
   const seriesResults = document.getElementById("seriesResults");
   const seriesTmdbInput = document.getElementById("seriesTmdbInput");
@@ -591,7 +580,6 @@
   const seriesSynopsisBox = document.getElementById("seriesSynopsisBox");
   const seriesVideoplayer = document.getElementById("seriesVideoplayer");
   const playerSelectorSeries = document.getElementById("playerSelectorSeries");
-
   async function startSeriesSearch() {
     seriesResults.innerHTML = "";
     seriesPagination.innerHTML = "";
@@ -601,7 +589,6 @@
     if (!currentSeriesTitle) return;
     await searchSeries(currentSeriesPage);
   }
-
   document.getElementById("searchSeriesBtn").addEventListener("click", startSeriesSearch);
   document.getElementById("seriesTitleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -609,7 +596,6 @@
       startSeriesSearch();
     }
   });
-
   async function searchSeries(page) {
     try {
       const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
@@ -673,7 +659,6 @@
       seriesPagination.innerHTML = "";
     }
   }
-
   function updateSeriesPlayer() {
     const tmdbCode = seriesTmdbInput.value.trim();
     const season = seasonInput.value.trim();
@@ -712,14 +697,11 @@
     }
     document.getElementById("seriesIframeWrapper").style.display = tmdbCode && season && episode ? "block" : "none";
   }
-
   function loadSeries() {
     updateSeriesPlayer();
   }
-
   seasonInput.addEventListener("input", updateSeriesPlayer);
   episodeInput.addEventListener("input", updateSeriesPlayer);
-
   function reloadCineSeries() {
     const iframe = document.getElementById("cineSeriesIframe");
     iframe.src = iframe.src;
@@ -735,7 +717,6 @@
       iframe.src = seriesVideoplayer.src;
     }
   }
-
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -770,11 +751,44 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
-
   showMode("movies");
+
+  // Funcion para activar fullscreen del contenedor del reproductor
+  function toggleFullScreen(container) {
+    if (!document.fullscreenElement) {
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) { /* Safari */
+        container.webkitRequestFullscreen();
+      } else if (container.msRequestFullscreen) { /* IE11 */
+        container.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  // Añadir evento onclick en boton fullscreen películas
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
+  const iframeWrapper = document.getElementById("iframeWrapper");
+  fullscreenBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // Para que no afecte si se hace clic en iframe
+    toggleFullScreen(iframeWrapper);
+  });
+
+  // Añadir evento onclick en boton fullscreen series
+  const fullscreenBtnSeries = document.getElementById("fullscreenBtnSeries");
+  const seriesIframeWrapper = document.getElementById("seriesIframeWrapper");
+  fullscreenBtnSeries.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleFullScreen(seriesIframeWrapper);
+  });
 </script>
 </body>
 </html>
+
 
 
 
