@@ -363,7 +363,7 @@
           <button class="action-btn" id="searchBtn" onclick="loadMovie()">▶️ Cargar película</button>
           <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
         </div>
-        <div class="player-container-wrapper" id="iframeWrapper">
+        <div class="player-container-wrapper" id="iframeWrapper" style="display:none;">
           <iframe id="videoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtn" title="Pantalla completa"></button>
         </div>
@@ -393,7 +393,7 @@
           <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
           <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
         </div>
-        <div class="player-container-wrapper" id="seriesIframeWrapper">
+        <div class="player-container-wrapper" id="seriesIframeWrapper" style="display:none;">
           <iframe id="seriesVideoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtnSeries" title="Pantalla completa"></button>
         </div>
@@ -520,6 +520,7 @@
     const titleSlug = tmdbInput.getAttribute("data-title") || "movie";
     if (!code) {
       videoplayer.src = "";
+      document.getElementById("iframeWrapper").style.display = "none";
       return;
     }
     switch (player) {
@@ -527,6 +528,7 @@
         videoplayer.src = `https://vidfast.pro/movie/${code}`;
         break;
       case "videasy":
+        // Aquí embebemos la página completa, no solo el reproductor
         videoplayer.src = `https://player.videasy.net/movie/${code}`;
         break;
       case "vidjoy":
@@ -769,7 +771,6 @@
 </script>
 </body>
 </html>
-
 
 
 
