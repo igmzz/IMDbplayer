@@ -6,6 +6,7 @@
 <link rel="icon" href="carrete-de-pelicula.ico" type="image/x-icon" />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
+  /* el resto del CSS igual */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -360,10 +361,10 @@
             <option value="vidsrc">VidSrc</option>
             <option value="embedsu">Embedsu</option>
           </select>
-          <button class="action-btn" id="searchBtn" onclick="loadMovie()">▶️ Cargar película</button>
+          <button class="action-btn" id="loadMovieBtn" onclick="loadMovie()">▶️ Cargar película</button>
           <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
         </div>
-        <div class="player-container-wrapper" id="iframeWrapper" style="display:none;">
+        <div class="player-container-wrapper" id="iframeWrapper">
           <iframe id="videoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtn" title="Pantalla completa"></button>
         </div>
@@ -390,10 +391,10 @@
             <option value="vidlink">Vidlink</option>
             <option value="embedsu">Embedsu</option>
           </select>
-          <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
+          <button class="action-btn" id="loadSeriesBtn" onclick="loadSeries()">▶️ Cargar episodio</button>
           <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
         </div>
-        <div class="player-container-wrapper" id="seriesIframeWrapper" style="display:none;">
+        <div class="player-container-wrapper" id="seriesIframeWrapper">
           <iframe id="seriesVideoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtnSeries" title="Pantalla completa"></button>
         </div>
@@ -401,21 +402,25 @@
       </div>
     </div>
   </div>
+
   <div id="cineOverlay">
     <button id="cineReloadBtn" onclick="reloadCineMovie()">🔄 Recargar</button>
     <button id="cineExitBtn" onclick="toggleCineMode()">⏎ Salir</button>
     <iframe id="cineIframe" allowfullscreen allow="autoplay; fullscreen"></iframe>
   </div>
+
   <div id="cineOverlaySeries">
     <button id="cineReloadBtnSeries" onclick="reloadCineSeries()">🔄 Recargar</button>
     <button id="cineExitBtnSeries" onclick="toggleCineModeSeries()">⏎ Salir</button>
     <iframe id="cineSeriesIframe" allowfullscreen allow="autoplay; fullscreen"></iframe>
   </div>
+
 <script>
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPage = 1, totalPages = 1, currentTitle = "";
   let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = "";
+
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
@@ -424,6 +429,7 @@
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
     document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
   }
+
   // --- PELÍCULAS ---
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
@@ -431,6 +437,7 @@
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
   const videoplayer = document.getElementById("videoplayer");
   const playerSelector = document.getElementById("playerSelector");
+
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -447,6 +454,7 @@
       startSearch();
     }
   });
+
   async function searchMovie(page) {
     try {
       const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -511,16 +519,16 @@
       moviesPagination.innerHTML = "";
     }
   }
+
   function loadMovie() {
     updateMoviePlayerSrc();
   }
+
   function updateMoviePlayerSrc(tmdbCode) {
     const code = tmdbCode || tmdbInput.value.trim();
     const player = playerSelector.value;
-    const titleSlug = tmdbInput.getAttribute("data-title") || "movie";
     if (!code) {
       videoplayer.src = "";
-      document.getElementById("iframeWrapper").style.display = "none";
       return;
     }
     switch (player) {
@@ -528,8 +536,8 @@
         videoplayer.src = `https://vidfast.pro/movie/${code}`;
         break;
       case "videasy":
-        // Aquí embebemos la página completa, no solo el reproductor
-        videoplayer.src = `https://player.videasy.net/movie/${code}`;
+        // Embed web videasy con el código tmdb q precargado en el input de búsqueda
+        videoplayer.src = `https://www.videasy.net/player?q=${encodeURIComponent(code)}`;
         break;
       case "vidjoy":
         videoplayer.src = `https://vidjoy.pro/embed/movie/${code}`;
@@ -563,6 +571,7 @@
       iframe.src = videoplayer.src;
     }
   }
+
   // --- SERIES ---
   const seriesResults = document.getElementById("seriesResults");
   const seriesTmdbInput = document.getElementById("seriesTmdbInput");
@@ -572,6 +581,7 @@
   const seriesSynopsisBox = document.getElementById("seriesSynopsisBox");
   const seriesVideoplayer = document.getElementById("seriesVideoplayer");
   const playerSelectorSeries = document.getElementById("playerSelectorSeries");
+
   async function startSeriesSearch() {
     seriesResults.innerHTML = "";
     seriesPagination.innerHTML = "";
@@ -588,6 +598,7 @@
       startSeriesSearch();
     }
   });
+
   async function searchSeries(page) {
     try {
       const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
@@ -651,12 +662,12 @@
       seriesPagination.innerHTML = "";
     }
   }
+
   function updateSeriesPlayer() {
     const tmdbCode = seriesTmdbInput.value.trim();
     const season = seasonInput.value.trim();
     const episode = episodeInput.value.trim();
     const player = playerSelectorSeries.value;
-    const titleSlug = seriesTmdbInput.getAttribute("data-title") || "serie";
     if (!tmdbCode || !season || !episode) {
       seriesVideoplayer.src = "";
       document.getElementById("seriesIframeWrapper").style.display = "none";
@@ -664,7 +675,8 @@
     }
     switch (player) {
       case "videasy":
-        seriesVideoplayer.src = `https://player.videasy.net/tv/${tmdbCode}/${season}/${episode}`;
+        // Igual que películas, precargamos el código tmdb en videasy player como búsqueda
+        seriesVideoplayer.src = `https://www.videasy.net/player?q=${encodeURIComponent(tmdbCode)}`;
         break;
       case "vidfast":
         seriesVideoplayer.src = `https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}`;
@@ -686,8 +698,10 @@
   function loadSeries() {
     updateSeriesPlayer();
   }
+
   seasonInput.addEventListener("input", updateSeriesPlayer);
   episodeInput.addEventListener("input", updateSeriesPlayer);
+
   function reloadCineSeries() {
     const iframe = document.getElementById("cineSeriesIframe");
     iframe.src = iframe.src;
@@ -703,6 +717,7 @@
       iframe.src = seriesVideoplayer.src;
     }
   }
+
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -737,15 +752,17 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
+
   showMode("movies");
-  // Funcion para activar fullscreen del contenedor del reproductor
+
+  // Función para activar fullscreen del contenedor del reproductor
   function toggleFullScreen(container) {
     if (!document.fullscreenElement) {
       if (container.requestFullscreen) {
         container.requestFullscreen();
-      } else if (container.webkitRequestFullscreen) { /* Safari */
+      } else if (container.webkitRequestFullscreen) {
         container.webkitRequestFullscreen();
-      } else if (container.msRequestFullscreen) { /* IE11 */
+      } else if (container.msRequestFullscreen) {
         container.msRequestFullscreen();
       }
     } else {
@@ -758,7 +775,7 @@
   const fullscreenBtn = document.getElementById("fullscreenBtn");
   const iframeWrapper = document.getElementById("iframeWrapper");
   fullscreenBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); // Para que no afecte si se hace clic en iframe
+    e.stopPropagation();
     toggleFullScreen(iframeWrapper);
   });
   // Añadir evento onclick en boton fullscreen series
@@ -771,8 +788,6 @@
 </script>
 </body>
 </html>
-
-
 
 
 
