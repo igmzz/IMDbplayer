@@ -62,7 +62,7 @@ button.action-btn:hover { transform:scale(1.05); box-shadow:0 10px 20px rgba(0,0
 .title {
   padding: 10px 12px;
   font-weight: 700;
-  font-size: 12px;      /* Se reduce tamaño de fuente */
+  font-size: 12px;
   color: #aad8ff;
   text-align: center;
   user-select: none;
@@ -243,6 +243,7 @@ select#playerSelector, select#playerSelectorSeries {
         <option value="videasy">Videasy</option>
         <option value="vidfast">Vidfast</option>
         <option value="2embed">2Embed</option>
+        <option value="vidsrc">VidSrc</option>
       </select>
       <button class="action-btn" onclick="loadMovie()">▶️ Cargar película</button>
       <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
@@ -271,6 +272,7 @@ select#playerSelector, select#playerSelectorSeries {
         <option value="videasy">Videasy</option>
         <option value="vidfast">Vidfast</option>
         <option value="2embed">2Embed</option>
+        <option value="vidsrc">VidSrc</option>
       </select>
       <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
       <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
@@ -400,7 +402,6 @@ function loadMovie() {
   const code = tmdbInput.value.trim();
   if (code) {
     updateMoviePlayerSrc(code);
-    movieSynopsisBox.innerHTML = '';
   }
 }
 function updateMoviePlayerSrc(tmdbCode) {
@@ -418,7 +419,10 @@ function updateMoviePlayerSrc(tmdbCode) {
       videoplayer.src = `https://vidfast.pro/movie/${code}`;
       break;
     case '2embed':
-      videoplayer.src = `https://hnembed.cc/embed/movie/${code}`;
+      videoplayer.src = `https://www.2embed.cc/embed/${code}`;
+      break;
+    case 'vidsrc':
+      videoplayer.src = `https://vidsrc.me/embed/movie?tmdb=${code}`;
       break;
     default:
       videoplayer.src = '';
@@ -534,7 +538,10 @@ function updateSeriesPlayer() {
       seriesVideoplayer.src = `https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}`;
       break;
     case '2embed':
-      seriesVideoplayer.src = `https://hnembed.cc/embed/tv/${tmdbCode}/${season}/${episode}`;
+      seriesVideoplayer.src = `https://www.2embed.cc/embed/${tmdbCode}/${season}/${episode}`;
+      break;
+    case 'vidsrc':
+      seriesVideoplayer.src = `https://vidsrc.me/embed/tv?tmdb=${tmdbCode}&season=${season}&episode=${episode}`;
       break;
     default:
       seriesVideoplayer.src = '';
@@ -589,6 +596,8 @@ showMode('movies');
 </script>
 </body>
 </html>
+
+
 
 
 
