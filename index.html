@@ -235,7 +235,7 @@
     border-radius: 26px;
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
     overflow: hidden;
-    margin-top: 20px; /* separación arriba */
+    margin-top: 20px;
   }
   .player-container-wrapper iframe {
     width: 100%;
@@ -382,7 +382,6 @@
             <option value="vidlink">Vidlink</option>
             <option value="embedsu">Embedsu</option>
             <option value="vidora">Vidora</option>
-            <option value="vidsrccc">Vidsrc.cc</option>
             <option value="mappleDirect">Mapple</option>
           </select>
           <button class="action-btn" onclick="loadMovie()">▶️ Cargar película</button>
@@ -429,7 +428,6 @@
             <option value="vidlink">Vidlink</option>
             <option value="embedsu">Embedsu</option>
             <option value="vidora">Vidora</option>
-            <option value="vidsrccc">Vidsrc.cc</option>
             <option value="mappleDirect">Mapple</option>
           </select>
           <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
@@ -641,9 +639,6 @@
       case "vidora":
         videoplayer.src = `https://vidora.su/movie/${code}`;
         break;
-      case "vidsrccc":
-        videoplayer.src = `https://vidsrc.cc/v2/embed/movie/${code}?autoPlay=false`;
-        break;
       default:
         videoplayer.src = "";
     }
@@ -809,9 +804,6 @@
       case "vidora":
         seriesVideoplayer.src = `https://vidora.su/tv/${tmdbCode}/${season}/${episode}`;
         break;
-      case "vidsrccc":
-        seriesVideoplayer.src = `https://vidsrc.cc/v2/embed/movie/${tmdbCode}?autoPlay=false`;
-        break;
       default:
         seriesVideoplayer.src = "";
     }
@@ -934,6 +926,7 @@
 </script>
 </body>
 </html>
+
 
 
 
