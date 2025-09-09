@@ -226,21 +226,51 @@
     flex-direction: column;
     align-items: center;
   }
-  /* Nuevo contenedor responsivo para el iframe de video */
-  .iframe-container {
+  .player-container-wrapper {
     position: relative;
-    width: 100%;
-    height: 0;
-    padding-bottom: 56.25%; /* 16:9 ratio */
+    width: 860px;
+    height: 60vh;
+    background: #000;
+    border-radius: 26px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    margin-top: 20px;
   }
-  .iframe-container iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
+  .player-container-wrapper iframe {
     width: 100%;
     height: 100%;
-    border: none;
+    border: 0;
+    display: block;
     border-radius: 26px;
+  }
+  /* Botón fullscreen verde pequeño esquina inferior derecha */
+  #fullscreenBtn,
+  #fullscreenBtnSeries {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background-color: #28a745;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    bottom: 10px;
+    right: 10px;
+    transition: background-color 0.3s ease;
+    z-index: 1000;
+  }
+  #fullscreenBtn:hover,
+  #fullscreenBtnSeries:hover {
+    background-color: #1e7e34;
+  }
+  select#playerSelector,
+  select#playerSelectorSeries {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    background: #001a33;
+    color: #fff;
+    cursor: pointer;
   }
   #cineOverlay,
   #cineOverlaySeries {
@@ -333,8 +363,8 @@
           <button class="action-btn" id="searchBtn" onclick="loadMovie()">▶️ Cargar película</button>
           <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
         </div>
-        <div class="player-container-wrapper iframe-container" id="iframeWrapper" style="display:none;">
-          <iframe id="videoplayer" allowfullscreen title="Reproductor de video"></iframe>
+        <div class="player-container-wrapper" id="iframeWrapper">
+          <iframe id="videoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtn" title="Pantalla completa"></button>
         </div>
         <div id="movieSynopsisBox"></div>
@@ -363,8 +393,8 @@
           <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
           <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
         </div>
-        <div class="player-container-wrapper iframe-container" id="seriesIframeWrapper" style="display:none;">
-          <iframe id="seriesVideoplayer" allowfullscreen title="Reproductor de serie"></iframe>
+        <div class="player-container-wrapper" id="seriesIframeWrapper">
+          <iframe id="seriesVideoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtnSeries" title="Pantalla completa"></button>
         </div>
         <div id="seriesSynopsisBox"></div>
@@ -490,51 +520,31 @@
     const titleSlug = tmdbInput.getAttribute("data-title") || "movie";
     if (!code) {
       videoplayer.src = "";
-      document.getElementById("iframeWrapper").style.display = "none";
       return;
     }
     switch (player) {
       case "vidfast":
         videoplayer.src = `https://vidfast.pro/movie/${code}`;
-        videoplayer.allow = "autoplay; fullscreen"; // esta línea para asegurar permisos
-        videoplayer.title = "Video de Vidfast";
-        document.getElementById("iframeWrapper").style.display = "block";
         break;
       case "videasy":
-        // carga dentro de contenedor responsivo y quitando 'encrypted-media' para evitar errores DRM/reloj TV
         videoplayer.src = `https://player.videasy.net/movie/${code}`;
-        videoplayer.removeAttribute("allow");
-        videoplayer.title = "Video de Videasy";
-        document.getElementById("iframeWrapper").style.display = "block";
         break;
       case "vidjoy":
         videoplayer.src = `https://vidjoy.pro/embed/movie/${code}`;
-        videoplayer.allow = "autoplay; fullscreen";
-        videoplayer.title = "Video de Vidjoy";
-        document.getElementById("iframeWrapper").style.display = "block";
         break;
       case "vidlink":
         videoplayer.src = `https://vidlink.pro/movie/${code}`;
-        videoplayer.allow = "autoplay; fullscreen";
-        videoplayer.title = "Video de Vidlink";
-        document.getElementById("iframeWrapper").style.display = "block";
         break;
       case "vidsrc":
         videoplayer.src = `https://vidsrc.me/embed/movie?tmdb=${code}`;
-        videoplayer.allow = "autoplay; fullscreen";
-        videoplayer.title = "Video de Vidsrc";
-        document.getElementById("iframeWrapper").style.display = "block";
         break;
       case "embedsu":
         videoplayer.src = `https://embed.su/embed/movie/${code}`;
-        videoplayer.allow = "autoplay; fullscreen";
-        videoplayer.title = "Video de Embedsu";
-        document.getElementById("iframeWrapper").style.display = "block";
         break;
       default:
         videoplayer.src = "";
-        document.getElementById("iframeWrapper").style.display = "none";
     }
+    document.getElementById("iframeWrapper").style.display = code ? "block" : "none";
   }
   function reloadCineMovie() {
     const iframe = document.getElementById("cineIframe");
@@ -653,38 +663,23 @@
     switch (player) {
       case "videasy":
         seriesVideoplayer.src = `https://player.videasy.net/tv/${tmdbCode}/${season}/${episode}`;
-        seriesVideoplayer.removeAttribute("allow");
-        seriesVideoplayer.title = "Serie Videasy";
-        document.getElementById("seriesIframeWrapper").style.display = "block";
         break;
       case "vidfast":
         seriesVideoplayer.src = `https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}`;
-        seriesVideoplayer.allow = "autoplay; fullscreen";
-        seriesVideoplayer.title = "Serie Vidfast";
-        document.getElementById("seriesIframeWrapper").style.display = "block";
         break;
       case "vidsrc":
         seriesVideoplayer.src = `https://vidsrc.me/embed/tv?tmdb=${tmdbCode}&season=${season}&episode=${episode}`;
-        seriesVideoplayer.allow = "autoplay; fullscreen";
-        seriesVideoplayer.title = "Serie Vidsrc";
-        document.getElementById("seriesIframeWrapper").style.display = "block";
         break;
       case "vidlink":
         seriesVideoplayer.src = `https://vidlink.pro/tv/${tmdbCode}/${season}/${episode}`;
-        seriesVideoplayer.allow = "autoplay; fullscreen";
-        seriesVideoplayer.title = "Serie Vidlink";
-        document.getElementById("seriesIframeWrapper").style.display = "block";
         break;
       case "embedsu":
         seriesVideoplayer.src = `https://embed.su/embed/tv/${tmdbCode}/${season}/${episode}`;
-        seriesVideoplayer.allow = "autoplay; fullscreen";
-        seriesVideoplayer.title = "Serie Embedsu";
-        document.getElementById("seriesIframeWrapper").style.display = "block";
         break;
       default:
         seriesVideoplayer.src = "";
-        document.getElementById("seriesIframeWrapper").style.display = "none";
     }
+    document.getElementById("seriesIframeWrapper").style.display = tmdbCode && season && episode ? "block" : "none";
   }
   function loadSeries() {
     updateSeriesPlayer();
