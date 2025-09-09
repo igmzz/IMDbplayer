@@ -245,6 +245,7 @@ select#playerSelector, select#playerSelectorSeries {
         <option value="vidsrc">VidSrc</option>
         <option value="vidlink">Vidlink</option>
         <option value="embedsu">Embedsu</option>
+        <option value="vidora">Vidora</option>
       </select>
       <button class="action-btn" onclick="loadMovie()">▶️ Cargar película</button>
       <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
@@ -275,6 +276,7 @@ select#playerSelector, select#playerSelectorSeries {
         <option value="vidsrc">VidSrc</option>
         <option value="vidlink">Vidlink</option>
         <option value="embedsu">Embedsu</option>
+        <option value="vidora">Vidora</option>
       </select>
       <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
       <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
@@ -429,6 +431,9 @@ function updateMoviePlayerSrc(tmdbCode) {
     case 'embedsu':
       videoplayer.src = `https://embed.su/embed/movie/${code}`;
       break;
+    case 'vidora':
+      videoplayer.src = `https://vidora.su/movie/${code}`;
+      break;
     default:
       videoplayer.src = '';
   }
@@ -551,6 +556,9 @@ function updateSeriesPlayer() {
     case 'embedsu':
       seriesVideoplayer.src = `https://embed.su/embed/tv/${tmdbCode}/${season}/${episode}`;
       break;
+    case 'vidora':
+      seriesVideoplayer.src = `https://vidora.su/tv/${tmdbCode}/${season}/${episode}`;
+      break;
     default:
       seriesVideoplayer.src = '';
   }
@@ -604,10 +612,6 @@ showMode('movies');
 </script>
 </body>
 </html>
-
-
-
-
 
 
 
