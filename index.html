@@ -242,8 +242,9 @@ select#playerSelector, select#playerSelectorSeries {
       <select id="playerSelector" title="Selecciona reproductor">
         <option value="videasy">Videasy</option>
         <option value="vidfast">Vidfast</option>
-        <option value="2embed">2Embed</option>
         <option value="vidsrc">VidSrc</option>
+        <option value="vidlink">Vidlink</option>
+        <option value="embedsu">Embedsu</option>
       </select>
       <button class="action-btn" onclick="loadMovie()">▶️ Cargar película</button>
       <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
@@ -271,8 +272,9 @@ select#playerSelector, select#playerSelectorSeries {
       <select id="playerSelectorSeries" title="Selecciona reproductor">
         <option value="videasy">Videasy</option>
         <option value="vidfast">Vidfast</option>
-        <option value="2embed">2Embed</option>
         <option value="vidsrc">VidSrc</option>
+        <option value="vidlink">Vidlink</option>
+        <option value="embedsu">Embedsu</option>
       </select>
       <button class="action-btn" onclick="loadSeries()">▶️ Cargar episodio</button>
       <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
@@ -418,11 +420,14 @@ function updateMoviePlayerSrc(tmdbCode) {
     case 'vidfast':
       videoplayer.src = `https://vidfast.pro/movie/${code}`;
       break;
-    case '2embed':
-      videoplayer.src = `https://www.2embed.cc/embed/${code}`;
-      break;
     case 'vidsrc':
       videoplayer.src = `https://vidsrc.me/embed/movie?tmdb=${code}`;
+      break;
+    case 'vidlink':
+      videoplayer.src = `https://vidlink.pro/movie/${code}`;
+      break;
+    case 'embedsu':
+      videoplayer.src = `https://embed.su/embed/movie/${code}`;
       break;
     default:
       videoplayer.src = '';
@@ -537,11 +542,14 @@ function updateSeriesPlayer() {
     case 'vidfast':
       seriesVideoplayer.src = `https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}`;
       break;
-    case '2embed':
-      seriesVideoplayer.src = `https://www.2embed.cc/embed/${tmdbCode}/${season}/${episode}`;
-      break;
     case 'vidsrc':
       seriesVideoplayer.src = `https://vidsrc.me/embed/tv?tmdb=${tmdbCode}&season=${season}&episode=${episode}`;
+      break;
+    case 'vidlink':
+      seriesVideoplayer.src = `https://vidlink.pro/tv/${tmdbCode}/${season}/${episode}`;
+      break;
+    case 'embedsu':
+      seriesVideoplayer.src = `https://embed.su/embed/tv/${tmdbCode}/${season}/${episode}`;
       break;
     default:
       seriesVideoplayer.src = '';
