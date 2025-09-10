@@ -441,7 +441,7 @@
       moviesPagination.innerHTML = "";
     }
   }
-  // Modal opciones reproducción con embed para Videasy actualizado y sin Videasy TV
+  // Modal opciones reproducción con embed para nuevos reproductores Flixer, Rive, Vidsrc.cc, y más
   function openOptionsModalFromInput() {
     const tmdbId = tmdbInput.value.trim();
     if (!tmdbId) {
@@ -458,8 +458,10 @@
       { name: "Vidjoy", embed: `<iframe src="https://vidjoy.pro/watch/movie/${tmdbId}/${titleSlug}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Vidlink", embed: `<iframe src="https://vidlink.pro/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "VidSrc", embed: `<iframe src="https://vidsrc.xyz/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Vidsrc.cc", embed: `<iframe src="https://vidsrc.cc/v2/embed/movie/${tmdbId}?autoPlay=false" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Embed.su", embed: `<iframe src="https://embed.su/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
-      { name: "UpCloud", embed: `<iframe src="https://vidsrc.cc/v2/embed/movie/${tmdbId}?poster=true&autoPlay=false" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Flixer", embed: `<iframe src="https://flixer.su/watch/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Rive", embed: `<iframe src="https://rivestream.org/watch?type=movie&id=${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { 
         name: "CINEBY", 
         url: "https://www.cineby.app/" 
