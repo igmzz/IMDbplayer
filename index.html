@@ -6,7 +6,6 @@
 <link rel="icon" href="carrete-de-pelicula.ico" type="image/x-icon" />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
-  /* el resto del CSS igual */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -244,7 +243,6 @@
     display: block;
     border-radius: 26px;
   }
-  /* Botón fullscreen verde pequeño esquina inferior derecha */
   #fullscreenBtn,
   #fullscreenBtnSeries {
     position: absolute;
@@ -355,7 +353,8 @@
           <input type="text" id="tmdbInput" placeholder="Introduce código TMDB" />
           <select id="playerSelector" title="Selecciona reproductor">
             <option value="vidfast">Vidfast</option>
-            <option value="videasy">Videasy</option>
+            <option value="videasy">Videasy Reproductor</option>
+            <option value="videasyweb">Videasy Web</option>
             <option value="vidjoy">Vidjoy</option>
             <option value="vidlink">Vidlink</option>
             <option value="vidsrc">VidSrc</option>
@@ -364,8 +363,8 @@
           <button class="action-btn" id="loadMovieBtn" onclick="loadMovie()">▶️ Cargar película</button>
           <button class="action-btn" onclick="toggleCineMode()">🎬 Modo cine</button>
         </div>
-        <div class="player-container-wrapper" id="iframeWrapper">
-          <iframe id="videoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
+        <div class="player-container-wrapper" id="iframeWrapper" style="display:none;">
+          <iframe id="videoplayer" allowfullscreen allow="autoplay; fullscreen" style="width:100%; height:100%;"></iframe>
           <button id="fullscreenBtn" title="Pantalla completa"></button>
         </div>
         <div id="movieSynopsisBox"></div>
@@ -394,7 +393,7 @@
           <button class="action-btn" id="loadSeriesBtn" onclick="loadSeries()">▶️ Cargar episodio</button>
           <button class="action-btn" onclick="toggleCineModeSeries()">🎬 Modo cine</button>
         </div>
-        <div class="player-container-wrapper" id="seriesIframeWrapper">
+        <div class="player-container-wrapper" id="seriesIframeWrapper" style="display:none;">
           <iframe id="seriesVideoplayer" allowfullscreen allow="autoplay; fullscreen"></iframe>
           <button id="fullscreenBtnSeries" title="Pantalla completa"></button>
         </div>
@@ -402,25 +401,21 @@
       </div>
     </div>
   </div>
-
   <div id="cineOverlay">
     <button id="cineReloadBtn" onclick="reloadCineMovie()">🔄 Recargar</button>
     <button id="cineExitBtn" onclick="toggleCineMode()">⏎ Salir</button>
     <iframe id="cineIframe" allowfullscreen allow="autoplay; fullscreen"></iframe>
   </div>
-
   <div id="cineOverlaySeries">
     <button id="cineReloadBtnSeries" onclick="reloadCineSeries()">🔄 Recargar</button>
     <button id="cineExitBtnSeries" onclick="toggleCineModeSeries()">⏎ Salir</button>
     <iframe id="cineSeriesIframe" allowfullscreen allow="autoplay; fullscreen"></iframe>
   </div>
-
 <script>
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPage = 1, totalPages = 1, currentTitle = "";
   let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = "";
-
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
@@ -429,7 +424,6 @@
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
     document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
   }
-
   // --- PELÍCULAS ---
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
@@ -437,7 +431,6 @@
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
   const videoplayer = document.getElementById("videoplayer");
   const playerSelector = document.getElementById("playerSelector");
-
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -454,7 +447,6 @@
       startSearch();
     }
   });
-
   async function searchMovie(page) {
     try {
       const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -500,10 +492,12 @@
               <p><strong>Género:</strong> ${details.genres.map(g => g.name).join(", ")}</p>
               <p><strong>Duración:</strong> ${details.runtime} min</p>
               <p><strong>País:</strong> ${details.production_countries.map(c => c.name).join(", ")}</p>
-            </div>
-            <div class="expanded-buttons">
-              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(details.title + " trailer")}" target="_blank">▶️ Ver tráiler</a>
-              <a href="https://www.opensubtitles.org/es/search/sublanguageid-spa%2Ceng/imdbid-${details.external_ids.imdb_id ? details.external_ids.imdb_id.replace("tt", "") : ""}" target="_blank" rel="noopener noreferrer">Subtítulos (ES/EN)</a>
+              <div class="expanded-buttons">
+                <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(details.title + " trailer")}" target="_blank">▶️ Ver tráiler</a>
+                <a href="https://www.opensubtitles.org/es/search/sublanguageid-spa%2Ceng/imdbid-${details.external_ids.imdb_id ? details.external_ids.imdb_id.replace("tt", "") : ""}" target="_blank" rel="noopener noreferrer">Subtítulos (ES/EN)</a>
+                <a href="https://player.videasy.net/movie/${details.id}" target="_blank" rel="noopener noreferrer">Videasy Reproductor</a>
+                <a href="https://www.videasy.net/player?q=${details.id}" target="_blank" rel="noopener noreferrer">Videasy Web</a>
+              </div>
             </div>
           `;
           results.appendChild(expanded);
@@ -519,42 +513,55 @@
       moviesPagination.innerHTML = "";
     }
   }
-
   function loadMovie() {
     updateMoviePlayerSrc();
   }
-
   function updateMoviePlayerSrc(tmdbCode) {
     const code = tmdbCode || tmdbInput.value.trim();
     const player = playerSelector.value;
+    const iframeWrapper = document.getElementById("iframeWrapper");
     if (!code) {
+      videoplayer.style.display = "none";
+      iframeWrapper.style.display = "none";
       videoplayer.src = "";
       return;
     }
     switch (player) {
       case "vidfast":
+        videoplayer.style.display = "block";
         videoplayer.src = `https://vidfast.pro/movie/${code}`;
         break;
-      case "videasy":
-        // Embed web videasy con el código tmdb q precargado en el input de búsqueda
-        videoplayer.src = `https://www.videasy.net/player?q=${encodeURIComponent(code)}`;
+      case "videasy": // Videasy reproductor embed con número tmdb dinámico
+        videoplayer.style.display = "block";
+        videoplayer.src = `https://player.videasy.net/movie/${code}`;
+        break;
+      case "videasyweb": // Videasy web player con búsqueda dinámica
+        videoplayer.style.display = "block";
+        videoplayer.src = `https://www.videasy.net/player?q=${code}`;
         break;
       case "vidjoy":
+        videoplayer.style.display = "block";
         videoplayer.src = `https://vidjoy.pro/embed/movie/${code}`;
         break;
       case "vidlink":
+        videoplayer.style.display = "block";
         videoplayer.src = `https://vidlink.pro/movie/${code}`;
         break;
       case "vidsrc":
+        videoplayer.style.display = "block";
         videoplayer.src = `https://vidsrc.me/embed/movie?tmdb=${code}`;
         break;
       case "embedsu":
+        videoplayer.style.display = "block";
         videoplayer.src = `https://embed.su/embed/movie/${code}`;
         break;
       default:
+        videoplayer.style.display = "none";
         videoplayer.src = "";
+        iframeWrapper.style.display = "none";
+        return;
     }
-    document.getElementById("iframeWrapper").style.display = code ? "block" : "none";
+    iframeWrapper.style.display = "block";
   }
   function reloadCineMovie() {
     const iframe = document.getElementById("cineIframe");
@@ -568,10 +575,15 @@
       iframe.src = "";
     } else {
       overlay.style.display = "flex";
-      iframe.src = videoplayer.src;
+      if (playerSelector.value === "videasy") {
+        iframe.src = `https://player.videasy.net/movie/${tmdbInput.value}`;
+      } else if (playerSelector.value === "videasyweb") {
+        iframe.src = `https://www.videasy.net/player?q=${tmdbInput.value}`;
+      } else {
+        iframe.src = videoplayer.src;
+      }
     }
   }
-
   // --- SERIES ---
   const seriesResults = document.getElementById("seriesResults");
   const seriesTmdbInput = document.getElementById("seriesTmdbInput");
@@ -581,7 +593,6 @@
   const seriesSynopsisBox = document.getElementById("seriesSynopsisBox");
   const seriesVideoplayer = document.getElementById("seriesVideoplayer");
   const playerSelectorSeries = document.getElementById("playerSelectorSeries");
-
   async function startSeriesSearch() {
     seriesResults.innerHTML = "";
     seriesPagination.innerHTML = "";
@@ -598,7 +609,6 @@
       startSeriesSearch();
     }
   });
-
   async function searchSeries(page) {
     try {
       const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
@@ -662,7 +672,6 @@
       seriesPagination.innerHTML = "";
     }
   }
-
   function updateSeriesPlayer() {
     const tmdbCode = seriesTmdbInput.value.trim();
     const season = seasonInput.value.trim();
@@ -675,7 +684,6 @@
     }
     switch (player) {
       case "videasy":
-        // Igual que películas, precargamos el código tmdb en videasy player como búsqueda
         seriesVideoplayer.src = `https://www.videasy.net/player?q=${encodeURIComponent(tmdbCode)}`;
         break;
       case "vidfast":
@@ -698,10 +706,8 @@
   function loadSeries() {
     updateSeriesPlayer();
   }
-
   seasonInput.addEventListener("input", updateSeriesPlayer);
   episodeInput.addEventListener("input", updateSeriesPlayer);
-
   function reloadCineSeries() {
     const iframe = document.getElementById("cineSeriesIframe");
     iframe.src = iframe.src;
@@ -717,7 +723,6 @@
       iframe.src = seriesVideoplayer.src;
     }
   }
-
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -752,10 +757,7 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
-
   showMode("movies");
-
-  // Función para activar fullscreen del contenedor del reproductor
   function toggleFullScreen(container) {
     if (!document.fullscreenElement) {
       if (container.requestFullscreen) {
@@ -771,14 +773,12 @@
       }
     }
   }
-  // Añadir evento onclick en boton fullscreen películas
   const fullscreenBtn = document.getElementById("fullscreenBtn");
   const iframeWrapper = document.getElementById("iframeWrapper");
   fullscreenBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     toggleFullScreen(iframeWrapper);
   });
-  // Añadir evento onclick en boton fullscreen series
   const fullscreenBtnSeries = document.getElementById("fullscreenBtnSeries");
   const seriesIframeWrapper = document.getElementById("seriesIframeWrapper");
   fullscreenBtnSeries.addEventListener("click", (e) => {
@@ -788,6 +788,7 @@
 </script>
 </body>
 </html>
+
 
 
 
