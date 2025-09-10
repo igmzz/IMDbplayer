@@ -320,7 +320,6 @@
           <input type="number" id="episodeInput" placeholder="Episodio" min="1" style="width: 90px" />
           <select id="playerSelectorSeries" title="Selecciona reproductor">
             <option value="videasy">Videasy</option>
-            <option value="videasytv">Videasy TV</option>
             <option value="vidfast">Vidfast</option>
             <option value="vidsrc">VidSrc</option>
             <option value="vidlink">Vidlink</option>
@@ -348,12 +347,10 @@
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPage = 1, totalPages = 1, currentTitle = "";
   let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = "";
-
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
   }
-
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
     document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
@@ -361,14 +358,12 @@
     document.getElementById("playerEmbedWrapper").innerHTML = "";
     document.getElementById("seriesPlayerEmbedWrapper").innerHTML = "";
   }
-
   // --- PELÍCULAS ---
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
   const moviesPagination = document.getElementById("moviesPagination");
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
   const playerEmbedWrapper = document.getElementById("playerEmbedWrapper");
-
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -379,7 +374,6 @@
     if (!currentTitle) return;
     await searchMovie(currentPage);
   }
-
   document.getElementById("searchBtn").addEventListener("click", startSearch);
   document.getElementById("titleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -387,7 +381,6 @@
       startSearch();
     }
   });
-
   async function searchMovie(page) {
     try {
       const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -448,8 +441,7 @@
       moviesPagination.innerHTML = "";
     }
   }
-
-  // Modal opciones reproducción con embed para Videasy, pero NO para Videasy TV
+  // Modal opciones reproducción con embed para Videasy actualizado y sin Videasy TV
   function openOptionsModalFromInput() {
     const tmdbId = tmdbInput.value.trim();
     if (!tmdbId) {
@@ -462,8 +454,7 @@
     container.innerHTML = "";
     const options = [
       { name: "Vidfast", embed: `<iframe src="https://vidfast.pro/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
-      { name: "Videasy", embed: `<iframe src="https://player.videasy.net/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
-      { name: "Videasy TV", url: `https://proxyium.com/` },
+      { name: "Videasy", embed: `<iframe src="https://vidfast.to/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Vidjoy", embed: `<iframe src="https://vidjoy.pro/watch/movie/${tmdbId}/${titleSlug}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Vidlink", embed: `<iframe src="https://vidlink.pro/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "VidSrc", embed: `<iframe src="https://vidsrc.xyz/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
@@ -487,19 +478,16 @@
     });
     modal.style.display = "block";
   }
-
   function closeModal() {
     const modal = document.getElementById("optionsModal");
     modal.style.display = "none";
   }
-
   window.onclick = function(event) {
     const modal = document.getElementById("optionsModal");
     if (event.target == modal) {
       modal.style.display = "none";
     }
   };
-
   // --- SERIES ---
   const seriesResults = document.getElementById("seriesResults");
   const seriesTmdbInput = document.getElementById("seriesTmdbInput");
@@ -508,7 +496,6 @@
   const seriesPagination = document.getElementById("seriesPagination");
   const seriesSynopsisBox = document.getElementById("seriesSynopsisBox");
   const seriesPlayerEmbedWrapper = document.getElementById("seriesPlayerEmbedWrapper");
-
   async function startSeriesSearch() {
     seriesResults.innerHTML = "";
     seriesPagination.innerHTML = "";
@@ -519,7 +506,6 @@
     if (!currentSeriesTitle) return;
     await searchSeries(currentSeriesPage);
   }
-
   document.getElementById("searchSeriesBtn").addEventListener("click", startSeriesSearch);
   document.getElementById("seriesTitleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -527,7 +513,6 @@
       startSeriesSearch();
     }
   });
-
   async function searchSeries(page) {
     try {
       const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
@@ -591,7 +576,6 @@
       seriesPagination.innerHTML = "";
     }
   }
-
   function redirectSeries() {
     const tmdbCode = seriesTmdbInput.value.trim();
     const season = seasonInput.value.trim();
@@ -603,16 +587,11 @@
     }
     const titleSlug = seriesTmdbInput.getAttribute("data-title") || "";
     seriesPlayerEmbedWrapper.innerHTML = ""; // Limpiar embed previo
-
     let embedHTML = "";
     switch (player) {
       case "videasy":
-        embedHTML = `<iframe src="https://player.videasy.net/movie/${tmdbCode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
+        embedHTML = `<iframe src="https://vidfast.to/embed/movie/${tmdbCode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
         break;
-      case "videasytv":
-        // NO embed, redirigir a URL externa
-        window.open("https://proxyium.com/", "_blank");
-        return;
       case "vidfast":
         embedHTML = `<iframe src="https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
         break;
@@ -634,7 +613,6 @@
     }
     seriesPlayerEmbedWrapper.innerHTML = embedHTML;
   }
-
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -669,7 +647,6 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
-
   showMode("movies");
 </script>
 </body>
