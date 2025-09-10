@@ -246,7 +246,6 @@
     justify-content: center;
     gap: 15px;
   }
-
   /* Manual input container centered and spaced */
   #manualInput {
     margin-top: 25px;
@@ -265,7 +264,6 @@
     border-radius: 12px;
     color: #fff;
   }
-
 </style>
 </head>
 <body>
@@ -318,7 +316,6 @@
       </div>
     </div>
   </div>
-
   <!-- Modal para opciones de reproducción -->
   <div id="optionsModal">
     <div id="modalContent">
@@ -328,13 +325,11 @@
       <button class="modal-button" onclick="closeModal()" style="background:#2c9cff; color:#002440;">Cerrar</button>
     </div>
   </div>
-
 <script>
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPage = 1, totalPages = 1, currentTitle = "";
   let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = "";
-
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
@@ -343,13 +338,11 @@
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
     document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
   }
-
   // --- PELÍCULAS ---
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
   const moviesPagination = document.getElementById("moviesPagination");
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
-
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -366,7 +359,6 @@
       startSearch();
     }
   });
-
   async function searchMovie(page) {
     try {
       const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -426,7 +418,6 @@
       moviesPagination.innerHTML = "";
     }
   }
-
   // Modal opciones reproducción
   function openOptionsModalFromInput() {
     const tmdbId = tmdbInput.value.trim();
@@ -438,17 +429,15 @@
     const modal = document.getElementById("optionsModal");
     const container = document.getElementById("modalButtonsContainer");
     container.innerHTML = "";
-
     const options = [
       { name: "Vidfast", url: `https://vidfast.pro/movie/${tmdbId}?autoPlay=true` },
-      { name: "Videasy", url: `https://player.videasy.net/movie/${tmdbId}` },
+      { name: "Videasy", url: `https://185.246.87.210/movie/${tmdbId}?__cpo=aHR0cHM6Ly9wbGF5ZXIudmlkZWFzeS5uZXQ` },
       { name: "Vidjoy", url: `https://vidjoy.pro/watch/movie/${tmdbId}/${titleSlug}` },
       { name: "Vidlink", url: `https://vidlink.pro/movie/${tmdbId}` },
       { name: "VidSrc", url: `https://vidsrc.xyz/embed/movie/${tmdbId}` },
       { name: "Embed.su", url: `https://embed.su/embed/movie/${tmdbId}` },
       { name: "Videasy TV", url: 'https://www.videasy.net/player' }
     ];
-
     options.forEach(opt => {
       const btn = document.createElement("button");
       btn.className = "modal-button";
@@ -456,21 +445,18 @@
       btn.onclick = () => window.open(opt.url, "_blank");
       container.appendChild(btn);
     });
-
     modal.style.display = "block";
   }
   function closeModal() {
     const modal = document.getElementById("optionsModal");
     modal.style.display = "none";
   }
-
   window.onclick = function(event) {
     const modal = document.getElementById("optionsModal");
     if (event.target == modal) {
       modal.style.display = "none";
     }
   };
-
   // --- SERIES ---
   const seriesResults = document.getElementById("seriesResults");
   const seriesTmdbInput = document.getElementById("seriesTmdbInput");
@@ -478,7 +464,6 @@
   const episodeInput = document.getElementById("episodeInput");
   const seriesPagination = document.getElementById("seriesPagination");
   const seriesSynopsisBox = document.getElementById("seriesSynopsisBox");
-
   async function startSeriesSearch() {
     seriesResults.innerHTML = "";
     seriesPagination.innerHTML = "";
@@ -495,7 +480,6 @@
       startSeriesSearch();
     }
   });
-
   async function searchSeries(page) {
     try {
       const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
@@ -558,7 +542,6 @@
       seriesPagination.innerHTML = "";
     }
   }
-
   function redirectSeries() {
     const tmdbCode = seriesTmdbInput.value.trim();
     const season = seasonInput.value.trim();
@@ -595,7 +578,6 @@
     }
     window.open(url, "_blank");
   }
-
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -630,7 +612,6 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
-
   showMode("movies");
 </script>
 </body>
