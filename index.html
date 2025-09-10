@@ -6,7 +6,7 @@
 <link rel="icon" href="carrete-de-pelicula.ico" type="image/x-icon" />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
-  /* Mantén aquí todo tu CSS original intacto */
+  /* CSS original intacto */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -187,6 +187,23 @@
   .expanded-info h3 {
     margin-bottom: 15px;
   }
+  #playerEmbedWrapper {
+    margin-top: 20px;
+    width: 100%;
+    height: 480px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
+    background: #000;
+  }
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
   .modal-button {
     padding: 10px 18px;
     border-radius: 8px;
@@ -285,6 +302,7 @@
           <button class="action-btn" id="loadMovieBtn" onclick="openOptionsModalFromInput()">▶️ Cargar película</button>
         </div>
         <div id="movieSynopsisBox"></div>
+        <div id="playerEmbedWrapper"></div>
       </div>
     </div>
     <!-- SERIES -->
@@ -302,15 +320,17 @@
           <input type="number" id="episodeInput" placeholder="Episodio" min="1" style="width: 90px" />
           <select id="playerSelectorSeries" title="Selecciona reproductor">
             <option value="videasy">Videasy</option>
+            <option value="videasytv">Videasy TV</option>
             <option value="vidfast">Vidfast</option>
             <option value="vidsrc">VidSrc</option>
             <option value="vidlink">Vidlink</option>
-            <option value="embedsu">Embedsu</option>
+            <option value="embedsu">Embed.su</option>
             <option value="vidjoy">Vidjoy</option>
           </select>
           <button class="action-btn" id="loadSeriesBtn" onclick="redirectSeries()">▶️ Cargar episodio</button>
         </div>
         <div id="seriesSynopsisBox"></div>
+        <div id="seriesPlayerEmbedWrapper" style="margin-top:20px; width: 100%; height: 480px; max-width: 800px; margin-left: auto; margin-right: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000;"></div>
       </div>
     </div>
   </div>
@@ -328,28 +348,38 @@
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPage = 1, totalPages = 1, currentTitle = "";
   let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = "";
+
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
   }
+
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
     document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
+    // Limpiar reproductores embed al cambiar
+    document.getElementById("playerEmbedWrapper").innerHTML = "";
+    document.getElementById("seriesPlayerEmbedWrapper").innerHTML = "";
   }
+
   // --- PELÍCULAS ---
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
   const moviesPagination = document.getElementById("moviesPagination");
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
+  const playerEmbedWrapper = document.getElementById("playerEmbedWrapper");
+
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
+    playerEmbedWrapper.innerHTML = "";
     currentPage = 1;
     currentTitle = document.getElementById("titleInput").value.trim();
     if (!currentTitle) return;
     await searchMovie(currentPage);
   }
+
   document.getElementById("searchBtn").addEventListener("click", startSearch);
   document.getElementById("titleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -357,6 +387,7 @@
       startSearch();
     }
   });
+
   async function searchMovie(page) {
     try {
       const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -380,6 +411,7 @@
           results.innerHTML = "";
           moviesPagination.innerHTML = "";
           movieSynopsisBox.innerHTML = "";
+          playerEmbedWrapper.innerHTML = "";
           const expanded = document.createElement("div");
           expanded.className = "expanded-card";
           const detailsUrl = `${tmdbBaseURL}/movie/${movie.id}?api_key=${tmdbApiKey}&language=es-ES&append_to_response=credits,external_ids`;
@@ -416,7 +448,8 @@
       moviesPagination.innerHTML = "";
     }
   }
-  // Modal opciones reproducción
+
+  // Modal opciones reproducción con embed para Videasy, pero NO para Videasy TV
   function openOptionsModalFromInput() {
     const tmdbId = tmdbInput.value.trim();
     if (!tmdbId) {
@@ -428,32 +461,45 @@
     const container = document.getElementById("modalButtonsContainer");
     container.innerHTML = "";
     const options = [
-      { name: "Vidfast", url: `https://vidfast.pro/movie/${tmdbId}?autoPlay=true` },
-      { name: "Videasy", url: `https://proxyorb.com/es` }, // Cambio aquí para redirigir directo a proxyorb
-      { name: "Vidjoy", url: `https://vidjoy.pro/watch/movie/${tmdbId}/${titleSlug}` },
-      { name: "Vidlink", url: `https://vidlink.pro/movie/${tmdbId}` },
-      { name: "VidSrc", url: `https://vidsrc.xyz/embed/movie/${tmdbId}` },
-      { name: "Embed.su", url: `https://embed.su/embed/movie/${tmdbId}` }
+      { name: "Vidfast", embed: `<iframe src="https://vidfast.pro/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Videasy", embed: `<iframe src="https://player.videasy.net/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Videasy TV", url: `https://proxyium.com/` },
+      { name: "Vidjoy", embed: `<iframe src="https://vidjoy.pro/watch/movie/${tmdbId}/${titleSlug}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Vidlink", embed: `<iframe src="https://vidlink.pro/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "VidSrc", embed: `<iframe src="https://vidsrc.xyz/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Embed.su", embed: `<iframe src="https://embed.su/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` }
     ];
     options.forEach(opt => {
       const btn = document.createElement("button");
       btn.className = "modal-button";
       btn.textContent = opt.name;
-      btn.onclick = () => window.open(opt.url, "_blank");
+      btn.onclick = () => {
+        closeModal();
+        if (opt.embed) {
+          playerEmbedWrapper.innerHTML = opt.embed;
+        } else if (opt.url) {
+          window.open(opt.url, "_blank");
+        } else {
+          playerEmbedWrapper.innerHTML = "";
+        }
+      };
       container.appendChild(btn);
     });
     modal.style.display = "block";
   }
+
   function closeModal() {
     const modal = document.getElementById("optionsModal");
     modal.style.display = "none";
   }
+
   window.onclick = function(event) {
     const modal = document.getElementById("optionsModal");
     if (event.target == modal) {
       modal.style.display = "none";
     }
   };
+
   // --- SERIES ---
   const seriesResults = document.getElementById("seriesResults");
   const seriesTmdbInput = document.getElementById("seriesTmdbInput");
@@ -461,15 +507,19 @@
   const episodeInput = document.getElementById("episodeInput");
   const seriesPagination = document.getElementById("seriesPagination");
   const seriesSynopsisBox = document.getElementById("seriesSynopsisBox");
+  const seriesPlayerEmbedWrapper = document.getElementById("seriesPlayerEmbedWrapper");
+
   async function startSeriesSearch() {
     seriesResults.innerHTML = "";
     seriesPagination.innerHTML = "";
     seriesSynopsisBox.innerHTML = "";
+    seriesPlayerEmbedWrapper.innerHTML = "";
     currentSeriesPage = 1;
     currentSeriesTitle = document.getElementById("seriesTitleInput").value.trim();
     if (!currentSeriesTitle) return;
     await searchSeries(currentSeriesPage);
   }
+
   document.getElementById("searchSeriesBtn").addEventListener("click", startSeriesSearch);
   document.getElementById("seriesTitleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -477,6 +527,7 @@
       startSeriesSearch();
     }
   });
+
   async function searchSeries(page) {
     try {
       const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
@@ -500,6 +551,7 @@
           seriesResults.innerHTML = "";
           seriesPagination.innerHTML = "";
           seriesSynopsisBox.innerHTML = "";
+          seriesPlayerEmbedWrapper.innerHTML = "";
           const expanded = document.createElement("div");
           expanded.className = "expanded-card";
           const detailsUrl = `${tmdbBaseURL}/tv/${series.id}?api_key=${tmdbApiKey}&language=es-ES&append_to_response=credits,external_ids`;
@@ -539,6 +591,7 @@
       seriesPagination.innerHTML = "";
     }
   }
+
   function redirectSeries() {
     const tmdbCode = seriesTmdbInput.value.trim();
     const season = seasonInput.value.trim();
@@ -549,32 +602,39 @@
       return;
     }
     const titleSlug = seriesTmdbInput.getAttribute("data-title") || "";
-    let url = "";
+    seriesPlayerEmbedWrapper.innerHTML = ""; // Limpiar embed previo
+
+    let embedHTML = "";
     switch (player) {
       case "videasy":
-        url = "https://proxyorb.com/es";
+        embedHTML = `<iframe src="https://player.videasy.net/movie/${tmdbCode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
         break;
+      case "videasytv":
+        // NO embed, redirigir a URL externa
+        window.open("https://proxyium.com/", "_blank");
+        return;
       case "vidfast":
-        url = `https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}`;
+        embedHTML = `<iframe src="https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
         break;
       case "vidsrc":
-        url = `https://vidsrc.xyz/embed/tv?tmdb=${tmdbCode}&season=${season}&episode=${episode}`;
+        embedHTML = `<iframe src="https://vidsrc.xyz/embed/tv?tmdb=${tmdbCode}&season=${season}&episode=${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
         break;
       case "vidlink":
-        url = `https://vidlink.pro/tv/${tmdbCode}/${season}/${episode}`;
+        embedHTML = `<iframe src="https://vidlink.pro/tv/${tmdbCode}/${season}/${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
         break;
       case "embedsu":
-        url = `https://embed.su/embed/tv/${tmdbCode}/${season}/${episode}`;
+        embedHTML = `<iframe src="https://embed.su/embed/tv/${tmdbCode}/${season}/${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
         break;
       case "vidjoy":
-        url = `https://vidjoy.pro/watch/tv/${tmdbCode}/${season}/${episode}/${titleSlug}`;
+        embedHTML = `<iframe src="https://vidjoy.pro/watch/tv/${tmdbCode}/${season}/${episode}/${titleSlug}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
         break;
       default:
         alert("Selecciona un reproductor válido.");
         return;
     }
-    window.open(url, "_blank");
+    seriesPlayerEmbedWrapper.innerHTML = embedHTML;
   }
+
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -609,10 +669,12 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
+
   showMode("movies");
 </script>
 </body>
 </html>
+
 
 
 
