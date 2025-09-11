@@ -6,6 +6,7 @@
 <link rel="icon" href="carrete-de-pelicula.ico" type="image/x-icon" />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
+  /* Estilos iguales al código anterior */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -269,25 +270,6 @@
     justify-content: center;
     gap: 20px;
   }
-  /* Estilo sección fútbol */
-  #footballSection {
-    display: none;
-    text-align: center;
-  }
-  #footballEmbeds {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 20px;
-  }
-  #footballEmbeds iframe {
-    width: 300px;
-    height: 480px;
-    border-radius: 16px;
-    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
-    background: #000;
-  }
 </style>
 </head>
 <body>
@@ -295,10 +277,9 @@
     <h2>IMDb Player</h2>
     <div id="modeSelector">
       <button onclick="showMode('movies')">Películas 🎬</button>
-      <button onclick="showMode('football')">Fútbol ⚽️</button>
     </div>
     <!-- PELÍCULAS -->
-    <div id="moviesSection" style="display:none;">
+    <div id="moviesSection" style="display:block;">
       <div id="searchContainer">
         <input type="text" id="titleInput" placeholder="Escribe el título..." />
         <button class="action-btn" id="searchBtn">Buscar</button>
@@ -312,15 +293,6 @@
         </div>
         <div id="movieSynopsisBox"></div>
         <div id="playerEmbedWrapper"></div>
-      </div>
-    </div>
-    <!-- FÚTBOL -->
-    <div id="footballSection">
-      <h3>Streaming de Fútbol en Vivo</h3>
-      <div id="footballEmbeds">
-        <iframe src="https://deporte-libre.click/en-vivo-online/dazn-laliga/" allowfullscreen allow="encrypted-media"></iframe>
-        <iframe src="https://deporte-libre.click/en-vivo-online/laliga/" allowfullscreen allow="encrypted-media"></iframe>
-        <iframe src="https://deporte-libre.click/en-vivo-online/m-campeones/" allowfullscreen allow="encrypted-media"></iframe>
       </div>
     </div>
   </div>
@@ -337,25 +309,19 @@
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPage = 1, totalPages = 1, currentTitle = "";
-
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
   }
-
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
-    document.getElementById("footballSection").style.display = (mode === "football") ? "block" : "none";
-    document.getElementById("playerEmbedWrapper").innerHTML = "";
   }
-
   // --- PELÍCULAS ---
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
   const moviesPagination = document.getElementById("moviesPagination");
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
   const playerEmbedWrapper = document.getElementById("playerEmbedWrapper");
-
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -373,7 +339,6 @@
       startSearch();
     }
   });
-
   async function searchMovie(page) {
     try {
       const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -434,7 +399,6 @@
       moviesPagination.innerHTML = "";
     }
   }
-
   // Modal opciones reproducción con embed para reproductores
   function openOptionsModalFromInput() {
     const tmdbId = tmdbInput.value.trim();
@@ -449,16 +413,13 @@
     const options = [
       { name: "Vidfast", embed: `<iframe src="https://vidfast.pro/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Videasy", embed: `<iframe src="https://vidfast.to/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
-      { name: "Vidjoy", embed: `<iframe src="https://vidjoy.pro/watch/movie/${tmdbId}/${titleSlug}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Vidlink", embed: `<iframe src="https://vidlink.pro/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "VidSrc", embed: `<iframe src="https://vidsrc.xyz/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Vidsrc.cc", embed: `<iframe src="https://vidsrc.cc/v2/embed/movie/${tmdbId}?autoPlay=false" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Embed.su", embed: `<iframe src="https://embed.su/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Flixer", embed: `<iframe src="https://flixer.su/watch/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Rive", embed: `<iframe src="https://rivestream.org/watch?type=movie&id=${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
-      { name: "Vidzee", embed: `<iframe src="https://player.vidzee.wtf/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
-      { name: "Vidbox", embed: `<iframe src="https://vidbox.to/watch/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
-      { name: "CINEBY", url: "https://www.cineby.app/" }
+      { name: "Vidzee", embed: `<iframe src="https://player.vidzee.wtf/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` }
     ];
     options.forEach(opt => {
       const btn = document.createElement("button");
@@ -478,19 +439,16 @@
     });
     modal.style.display = "block";
   }
-
   function closeModal() {
     const modal = document.getElementById("optionsModal");
     modal.style.display = "none";
   }
-
   window.onclick = function(event) {
     const modal = document.getElementById("optionsModal");
     if (event.target == modal) {
       modal.style.display = "none";
     }
   };
-
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -517,10 +475,10 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
-
   showMode("movies");
 </script>
 </body>
 </html>
+
 
 
