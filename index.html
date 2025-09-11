@@ -6,7 +6,6 @@
 <link rel="icon" href="carrete-de-pelicula.ico" type="image/x-icon" />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
-  /* CSS original intacto */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -261,23 +260,33 @@
     justify-content: center;
     gap: 15px;
   }
-  /* Manual input container centered and spaced */
+  /* CENTRAR CAMPO Y BOTÓN DE CÓDIGO TMDB */
   #manualInput {
     margin-top: 25px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 20px;
   }
-  #tmdbInput {
-    width: 220px;
+  /* Estilo sección fútbol */
+  #footballSection {
+    display: none;
     text-align: center;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    background: rgba(0, 25, 50, 0.75);
-    border: none;
-    border-radius: 12px;
-    color: #fff;
+  }
+  #footballEmbeds {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  #footballEmbeds iframe {
+    width: 300px;
+    height: 480px;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
+    background: #000;
   }
 </style>
 </head>
@@ -286,7 +295,7 @@
     <h2>IMDb Player</h2>
     <div id="modeSelector">
       <button onclick="showMode('movies')">Películas 🎬</button>
-      <button onclick="showMode('series')">Series 📺</button>
+      <button onclick="showMode('football')">Fútbol ⚽️</button>
     </div>
     <!-- PELÍCULAS -->
     <div id="moviesSection" style="display:none;">
@@ -305,31 +314,13 @@
         <div id="playerEmbedWrapper"></div>
       </div>
     </div>
-    <!-- SERIES -->
-    <div id="seriesSection" style="display:none;">
-      <div id="searchSeriesContainer">
-        <input type="text" id="seriesTitleInput" placeholder="Escribe el título de la serie..." />
-        <button class="action-btn" id="searchSeriesBtn">Buscar</button>
-      </div>
-      <div id="seriesResults"></div>
-      <div id="seriesPagination" class="pagination"></div>
-      <div id="seriesPlayerWrapper">
-        <div id="manualSeriesInput">
-          <input type="text" id="seriesTmdbInput" placeholder="Introduce código TMDb" />
-          <input type="number" id="seasonInput" placeholder="Temporada" min="1" style="width: 90px" />
-          <input type="number" id="episodeInput" placeholder="Episodio" min="1" style="width: 90px" />
-          <select id="playerSelectorSeries" title="Selecciona reproductor">
-            <option value="videasy">Videasy</option>
-            <option value="vidfast">Vidfast</option>
-            <option value="vidsrc">VidSrc</option>
-            <option value="vidlink">Vidlink</option>
-            <option value="embedsu">Embed.su</option>
-            <option value="vidjoy">Vidjoy</option>
-          </select>
-          <button class="action-btn" id="loadSeriesBtn" onclick="redirectSeries()">▶️ Cargar episodio</button>
-        </div>
-        <div id="seriesSynopsisBox"></div>
-        <div id="seriesPlayerEmbedWrapper" style="margin-top:20px; width: 100%; height: 480px; max-width: 800px; margin-left: auto; margin-right: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000;"></div>
+    <!-- FÚTBOL -->
+    <div id="footballSection">
+      <h3>Streaming de Fútbol en Vivo</h3>
+      <div id="footballEmbeds">
+        <iframe src="https://deporte-libre.click/en-vivo-online/dazn-laliga/" allowfullscreen allow="encrypted-media"></iframe>
+        <iframe src="https://deporte-libre.click/en-vivo-online/laliga/" allowfullscreen allow="encrypted-media"></iframe>
+        <iframe src="https://deporte-libre.click/en-vivo-online/m-campeones/" allowfullscreen allow="encrypted-media"></iframe>
       </div>
     </div>
   </div>
@@ -346,24 +337,25 @@
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPage = 1, totalPages = 1, currentTitle = "";
-  let currentSeriesPage = 1, totalSeriesPages = 1, currentSeriesTitle = "";
+
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
   }
+
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
-    document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
-    // Limpiar reproductores embed al cambiar
+    document.getElementById("footballSection").style.display = (mode === "football") ? "block" : "none";
     document.getElementById("playerEmbedWrapper").innerHTML = "";
-    document.getElementById("seriesPlayerEmbedWrapper").innerHTML = "";
   }
+
   // --- PELÍCULAS ---
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
   const moviesPagination = document.getElementById("moviesPagination");
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
   const playerEmbedWrapper = document.getElementById("playerEmbedWrapper");
+
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -381,6 +373,7 @@
       startSearch();
     }
   });
+
   async function searchMovie(page) {
     try {
       const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
@@ -441,7 +434,8 @@
       moviesPagination.innerHTML = "";
     }
   }
-  // Modal opciones reproducción con embed para nuevos reproductores Flixer, Rive, Vidsrc.cc, Vidzee, Vidbox y más
+
+  // Modal opciones reproducción con embed para reproductores
   function openOptionsModalFromInput() {
     const tmdbId = tmdbInput.value.trim();
     if (!tmdbId) {
@@ -464,10 +458,7 @@
       { name: "Rive", embed: `<iframe src="https://rivestream.org/watch?type=movie&id=${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Vidzee", embed: `<iframe src="https://player.vidzee.wtf/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Vidbox", embed: `<iframe src="https://vidbox.to/watch/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
-      { 
-        name: "CINEBY", 
-        url: "https://www.cineby.app/" 
-      }
+      { name: "CINEBY", url: "https://www.cineby.app/" }
     ];
     options.forEach(opt => {
       const btn = document.createElement("button");
@@ -487,141 +478,19 @@
     });
     modal.style.display = "block";
   }
+
   function closeModal() {
     const modal = document.getElementById("optionsModal");
     modal.style.display = "none";
   }
+
   window.onclick = function(event) {
     const modal = document.getElementById("optionsModal");
     if (event.target == modal) {
       modal.style.display = "none";
     }
   };
-  // --- SERIES ---
-  const seriesResults = document.getElementById("seriesResults");
-  const seriesTmdbInput = document.getElementById("seriesTmdbInput");
-  const seasonInput = document.getElementById("seasonInput");
-  const episodeInput = document.getElementById("episodeInput");
-  const seriesPagination = document.getElementById("seriesPagination");
-  const seriesSynopsisBox = document.getElementById("seriesSynopsisBox");
-  const seriesPlayerEmbedWrapper = document.getElementById("seriesPlayerEmbedWrapper");
-  async function startSeriesSearch() {
-    seriesResults.innerHTML = "";
-    seriesPagination.innerHTML = "";
-    seriesSynopsisBox.innerHTML = "";
-    seriesPlayerEmbedWrapper.innerHTML = "";
-    currentSeriesPage = 1;
-    currentSeriesTitle = document.getElementById("seriesTitleInput").value.trim();
-    if (!currentSeriesTitle) return;
-    await searchSeries(currentSeriesPage);
-  }
-  document.getElementById("searchSeriesBtn").addEventListener("click", startSeriesSearch);
-  document.getElementById("seriesTitleInput").addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      startSeriesSearch();
-    }
-  });
-  async function searchSeries(page) {
-    try {
-      const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentSeriesTitle)}&page=${page}&language=es-ES`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
-      const data = await response.json();
-      if (!data.results || data.results.length === 0) {
-        seriesResults.innerHTML = "<p>No se encontraron resultados.</p>";
-        seriesPagination.innerHTML = "";
-        return;
-      }
-      seriesResults.innerHTML = "";
-      totalSeriesPages = data.total_pages;
-      updatePagination(seriesPagination, "series");
-      data.results.forEach((series) => {
-        const card = document.createElement("div");
-        card.className = "card";
-        const poster = series.poster_path ? `https://image.tmdb.org/t/p/w200${series.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
-        card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${series.name} (${series.first_air_date ? series.first_air_date.slice(0,4) : "---"})</div>`;
-        card.onclick = async () => {
-          seriesResults.innerHTML = "";
-          seriesPagination.innerHTML = "";
-          seriesSynopsisBox.innerHTML = "";
-          seriesPlayerEmbedWrapper.innerHTML = "";
-          const expanded = document.createElement("div");
-          expanded.className = "expanded-card";
-          const detailsUrl = `${tmdbBaseURL}/tv/${series.id}?api_key=${tmdbApiKey}&language=es-ES&append_to_response=credits,external_ids`;
-          const detailsRes = await fetch(detailsUrl);
-          if (!detailsRes.ok) {
-            seriesResults.innerHTML = "<p>Error al cargar detalles de la serie.</p>";
-            return;
-          }
-          const details = await detailsRes.json();
-          const posterLarge = details.poster_path ? `https://image.tmdb.org/t/p/w300${details.poster_path}` : "https://via.placeholder.com/150x225?text=No+Image";
-          const director = details.created_by.length > 0 ? details.created_by[0].name : "N/D";
-          const cast = details.credits.cast.slice(0,5).map(c => c.name).join(", ");
-          expanded.innerHTML = `
-            <img src="${posterLarge}">
-            <div class="expanded-info">
-              <h3>${details.name} (${details.first_air_date ? details.first_air_date.slice(0,4) : "---"})</h3>
-              <p><strong>Creador:</strong> ${director}</p>
-              <p><strong>Reparto:</strong> ${cast}</p>
-              <p><strong>IMDb:</strong> <span style="color:#2c9cff">${details.vote_average}</span></p>
-              <p><strong>Género:</strong> ${details.genres.map(g => g.name).join(", ")}</p>
-              <p><strong>Temporadas:</strong> ${details.number_of_seasons}</p>
-              <p><strong>País:</strong> ${details.origin_country.join(", ")}</p>
-              <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(details.name + " trailer")}" target="_blank">▶️ Ver tráiler</a>
-            </div>
-          `;
-          seriesResults.appendChild(expanded);
-          seriesSynopsisBox.innerHTML = `<span class="movie-synopsis-label-series">Sinopsis:</span> ${details.overview || "Sinopsis no disponible."}`;
-          seriesTmdbInput.value = details.id || "";
-          seriesTmdbInput.setAttribute("data-title", slugify(details.name));
-          seasonInput.value = "";
-          episodeInput.value = "";
-        };
-        seriesResults.appendChild(card);
-      });
-    } catch (error) {
-      seriesResults.innerHTML = `<p>Error al buscar series: ${error.message}</p>`;
-      seriesPagination.innerHTML = "";
-    }
-  }
-  function redirectSeries() {
-    const tmdbCode = seriesTmdbInput.value.trim();
-    const season = seasonInput.value.trim();
-    const episode = episodeInput.value.trim();
-    const player = document.getElementById("playerSelectorSeries").value;
-    if (!tmdbCode || !season || !episode) {
-      alert("Introduce código TMDB, temporada y episodio válidos.");
-      return;
-    }
-    const titleSlug = seriesTmdbInput.getAttribute("data-title") || "";
-    seriesPlayerEmbedWrapper.innerHTML = ""; // Limpiar embed previo
-    let embedHTML = "";
-    switch (player) {
-      case "videasy":
-        embedHTML = `<iframe src="https://vidfast.to/embed/movie/${tmdbCode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
-        break;
-      case "vidfast":
-        embedHTML = `<iframe src="https://vidfast.pro/tv/${tmdbCode}/${season}/${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
-        break;
-      case "vidsrc":
-        embedHTML = `<iframe src="https://vidsrc.xyz/embed/tv?tmdb=${tmdbCode}&season=${season}&episode=${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
-        break;
-      case "vidlink":
-        embedHTML = `<iframe src="https://vidlink.pro/tv/${tmdbCode}/${season}/${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
-        break;
-      case "embedsu":
-        embedHTML = `<iframe src="https://embed.su/embed/tv/${tmdbCode}/${season}/${episode}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
-        break;
-      case "vidjoy":
-        embedHTML = `<iframe src="https://vidjoy.pro/watch/tv/${tmdbCode}/${season}/${episode}/${titleSlug}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`;
-        break;
-      default:
-        alert("Selecciona un reproductor válido.");
-        return;
-    }
-    seriesPlayerEmbedWrapper.innerHTML = embedHTML;
-  }
+
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -634,10 +503,6 @@
         currentPage--;
         searchMovie(currentPage);
       }
-      if (type === "series" && currentSeriesPage > 1) {
-        currentSeriesPage--;
-        searchSeries(currentSeriesPage);
-      }
     };
     const nextBtn = document.createElement("button");
     nextBtn.innerHTML = "&raquo;";
@@ -648,16 +513,14 @@
         currentPage++;
         searchMovie(currentPage);
       }
-      if (type === "series" && currentSeriesPage < totalSeriesPages) {
-        currentSeriesPage++;
-        searchSeries(currentSeriesPage);
-      }
     };
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
+
   showMode("movies");
 </script>
 </body>
 </html>
+
 
