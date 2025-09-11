@@ -302,20 +302,6 @@
   .similar-card:hover .similar-poster {
     transform: scale(1.07);
   }
-  .similar-title {
-    padding: 8px 10px;
-    font-weight: 600;
-    font-size: 11px;
-    color: #aad8ff;
-    text-align: center;
-    user-select: none;
-    height: 42px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
 </style>
 </head>
 <body>
@@ -331,7 +317,6 @@
       </div>
       <div id="results"></div>
       <div id="moviesPagination" class="pagination"></div>
-
       <div id="playerWrapper">
         <div id="playerControls">
           <div class="dropdown">
@@ -341,11 +326,8 @@
           <button class="action-btn" id="loadMovieBtn" onclick="openSelectedPlayer()">▶️ Cargar película</button>
           <input type="hidden" id="tmdbInput" value="" />
         </div>
-
         <div id="playerEmbedWrapper"></div>
-
         <div id="movieSynopsisBox"></div>
-
         <div id="similarMoviesSection" style="display:none;">
           <h3>Películas similares a tu selección</h3>
           <div id="similarMovies"></div>
@@ -353,14 +335,12 @@
       </div>
     </div>
   </div>
-
 <script>
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
-
   let currentPlayerEmbed = "";
+  let currentPlayerName = "";
   let currentMovieId = "";
-
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
@@ -369,11 +349,9 @@
       .replace(/-+/g, "-")
       .replace(/^-+|-+$/g, "");
   }
-
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
   }
-
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
   const moviesPagination = document.getElementById("moviesPagination");
@@ -382,7 +360,6 @@
   const dropdownContent = document.getElementById("dropdownContent");
   const similarMoviesSection = document.getElementById("similarMoviesSection");
   const similarMovies = document.getElementById("similarMovies");
-
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -392,13 +369,12 @@
     similarMovies.innerHTML = "";
     similarMoviesSection.style.display = "none";
     currentPlayerEmbed = "";
+    currentPlayerName = "";
     currentMovieId = "";
-
     const currentTitle = document.getElementById("titleInput").value.trim();
     if (!currentTitle) return;
     await searchMovie(1);
   }
-
   document.getElementById("searchBtn").addEventListener("click", startSearch);
   document.getElementById("titleInput").addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -406,7 +382,6 @@
       startSearch();
     }
   });
-
   async function searchMovie(page) {
     try {
       const currentTitle = document.getElementById("titleInput").value.trim();
@@ -437,7 +412,6 @@
       moviesPagination.innerHTML = "";
     }
   }
-
   async function loadMovieDetails(movieId) {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
@@ -447,8 +421,8 @@
     similarMovies.innerHTML = "";
     similarMoviesSection.style.display = "none";
     currentPlayerEmbed = "";
+    currentPlayerName = "";
     currentMovieId = movieId;
-
     try {
       const detailsUrl = `${tmdbBaseURL}/movie/${movieId}?api_key=${tmdbApiKey}&language=es-ES&append_to_response=credits,external_ids`;
       const detailsRes = await fetch(detailsUrl);
@@ -476,28 +450,23 @@
           <p><strong>País:</strong> ${details.production_countries.map(c => c.name).join(", ")}</p>
         </div>`;
       results.appendChild(expanded);
-
       tmdbInput.value = details.id || "";
       tmdbInput.setAttribute("data-title", slugify(details.title));
-
       movieSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || "Sinopsis no disponible."}`;
-
       createPlayerDropdown(details.id);
-
       const genreIds = details.genres.map(g => g.id).join(",");
       const year = details.release_date ? details.release_date.slice(0,4) : "";
-
       await loadSimilarMoviesAdvanced(genreIds, year, countries, castTop5.map(c => c.id), details.id);
     } catch (error) {
       results.innerHTML = `<p>Error al cargar detalles: ${error.message}</p>`;
     }
   }
-
-  // Dropdown jugadores
   function createPlayerDropdown(movieId) {
     dropdownContent.innerHTML = "";
     const players = [
-      {name: "Vidfast", embed: `<iframe src="https://vidfast.pro/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
+      // Vidfast ahora abre en pestaña nueva en lugar de iframe
+      {name: "Vidfast", url: `https://vidfast.pro/movie/${movieId}`},
+      // Videasy vuelve a iframe embed
       {name: "Videasy", embed: `<iframe src="https://vidfast.to/embed/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
       {name: "Vidlink", embed: `<iframe src="https://vidlink.pro/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
       {name: "VidSrc", embed: `<iframe src="https://vidsrc.xyz/embed/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
@@ -507,24 +476,30 @@
       {name: "Rive", embed: `<iframe src="https://rivestream.org/watch?type=movie&id=${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
       {name: "Vidzee", embed: `<iframe src="https://player.vidzee.wtf/embed/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`}
     ];
-
     players.forEach((player) => {
       const btn = document.createElement("button");
       btn.textContent = player.name;
       btn.onclick = () => {
-        currentPlayerEmbed = player.embed;
-        document.getElementById("dropdownBtn").textContent = player.name + " ▼";
-        dropdownContent.classList.remove("show");
-        playerEmbedWrapper.innerHTML = currentPlayerEmbed;
+        if (player.url) {
+          // Abrir en pestaña nueva en lugar de embeber
+          window.open(player.url, "_blank");
+          currentPlayerEmbed = "";
+          playerEmbedWrapper.innerHTML = "<p style='color:#aaa; text-align: center; padding: 20px;'>La película se ha abierto en una nueva pestaña.</p>";
+          document.getElementById("dropdownBtn").textContent = player.name + " ▼";
+        } else {
+          currentPlayerEmbed = player.embed;
+          document.getElementById("dropdownBtn").textContent = player.name + " ▼";
+          dropdownContent.classList.remove("show");
+          playerEmbedWrapper.innerHTML = currentPlayerEmbed;
+        }
+        currentPlayerName = player.name;
       };
       dropdownContent.appendChild(btn);
     });
   }
-
   function toggleDropdown() {
     dropdownContent.classList.toggle("show");
   }
-
   window.onclick = function(event) {
     if (!event.target.matches('.dropbtn')) {
       if (dropdownContent.classList.contains('show')) {
@@ -532,15 +507,15 @@
       }
     }
   };
-
   function openSelectedPlayer() {
     if (currentPlayerEmbed) {
       playerEmbedWrapper.innerHTML = currentPlayerEmbed;
+    } else if (currentPlayerName === "Vidfast") {
+      alert("La película de Vidfast se ha abierto en una nueva pestaña.");
     } else {
       alert("Por favor, selecciona primero un reproductor del desplegable.");
     }
   }
-
   async function loadSimilarMoviesAdvanced(genreIds, year, countries, actorIds, excludeMovieId) {
     try {
       // Buscar por género y año
@@ -552,47 +527,32 @@
         similarMoviesSection.style.display = "none";
         return;
       }
-
       const filteredResults = [];
-
-      // Limitar para no saturar peticiones
       const candidates = data.results.slice(0, 20);
-
-      // Para cada candidato, verificar país y reparto
       for (const movie of candidates) {
         if (movie.id === excludeMovieId) continue;
-
-        // Verificar país coincide
         const hasSameCountry = movie.production_countries 
           ? movie.production_countries.some(c => countries.includes(c.iso_3166_1)) 
           : false;
         if (!hasSameCountry) continue;
-
-        // Obtener créditos para reparto
         try {
           const creditsResp = await fetch(`${tmdbBaseURL}/movie/${movie.id}/credits?api_key=${tmdbApiKey}&language=es-ES`);
           if (!creditsResp.ok) continue;
           const credits = await creditsResp.json();
           const castIds = credits.cast.map(c => c.id);
-
-          // Chequear intersección actores
           const commonActors = actorIds.filter(id => castIds.includes(id));
-          // Si compartimos actor, o al menos país y género y año, aceptamos (actor refuerza)
           if (commonActors.length > 0 || hasSameCountry) {
             filteredResults.push(movie);
-            if (filteredResults.length >= 12) break; // max 12 similares para UX
+            if (filteredResults.length >= 12) break;
           }
         } catch {
-          // Omitir si falla
           continue;
         }
       }
-
       if (filteredResults.length === 0) {
         similarMoviesSection.style.display = "none";
         return;
       }
-
       similarMoviesSection.style.display = "block";
       similarMovies.innerHTML = "";
       filteredResults.forEach(similar => {
@@ -610,7 +570,6 @@
       similarMoviesSection.style.display = "none";
     }
   }
-
   function updatePagination(paginationEl, type) {
     paginationEl.innerHTML = "";
     const prevBtn = document.createElement("button");
@@ -637,11 +596,11 @@
     paginationEl.appendChild(prevBtn);
     paginationEl.appendChild(nextBtn);
   }
-
   showMode("movies");
 </script>
 </body>
 </html>
+
 
 
 
