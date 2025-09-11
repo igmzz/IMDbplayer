@@ -441,7 +441,7 @@
       moviesPagination.innerHTML = "";
     }
   }
-  // Modal opciones reproducción con embed para nuevos reproductores Flixer, Rive, Vidsrc.cc, y más
+  // Modal opciones reproducción con embed para nuevos reproductores Flixer, Rive, Vidsrc.cc, Vidzee, Vidbox y más
   function openOptionsModalFromInput() {
     const tmdbId = tmdbInput.value.trim();
     if (!tmdbId) {
@@ -462,6 +462,8 @@
       { name: "Embed.su", embed: `<iframe src="https://embed.su/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Flixer", embed: `<iframe src="https://flixer.su/watch/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { name: "Rive", embed: `<iframe src="https://rivestream.org/watch?type=movie&id=${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Vidzee", embed: `<iframe src="https://player.vidzee.wtf/embed/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
+      { name: "Vidbox", embed: `<iframe src="https://vidbox.to/watch/movie/${tmdbId}" width="100%" height="100%" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>` },
       { 
         name: "CINEBY", 
         url: "https://www.cineby.app/" 
@@ -658,5 +660,4 @@
 </script>
 </body>
 </html>
-
 
