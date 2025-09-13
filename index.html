@@ -301,6 +301,21 @@
   .similar-card:hover .similar-poster {
     transform: scale(1.07);
   }
+  /* Fútbol */
+  #futbolSection {
+    display: none;
+    margin-top: 20px;
+    text-align: center;
+  }
+  .futbol-embed {
+    width: 100%;
+    max-width: 1100px;
+    height: 700px;
+    margin: 20px auto;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
+  }
 </style>
 </head>
 <body>
@@ -308,6 +323,7 @@
     <h2>IMDb Player</h2>
     <div id="modeSelector">
       <button onclick="showMode('movies')">Películas 🎬</button>
+      <button onclick="showMode('futbol')">Fútbol ⚽</button>
     </div>
     <div id="moviesSection" style="display:block;">
       <div id="searchContainer">
@@ -333,6 +349,14 @@
         </div>
       </div>
     </div>
+    <div id="futbolSection">
+      <h2>Streaming de Fútbol</h2>
+      <iframe class="futbol-embed" src="https://ovogoaal.com/" allowfullscreen></iframe>
+      <iframe class="futbol-embed" src="https://streamed.pk/" allowfullscreen></iframe>
+      <iframe class="futbol-embed" src="https://www.bintv.fun/" allowfullscreen></iframe>
+      <iframe class="futbol-embed" src="https://goomhd.com/" allowfullscreen></iframe>
+      <iframe class="futbol-embed" src="https://deporte-libre.click/" allowfullscreen></iframe>
+    </div>
   </div>
 <script>
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
@@ -350,6 +374,7 @@
   }
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
+    document.getElementById("futbolSection").style.display = (mode === "futbol") ? "block" : "none";
   }
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
@@ -586,7 +611,6 @@
 </script>
 </body>
 </html>
-
 
 
 
