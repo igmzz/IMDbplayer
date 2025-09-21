@@ -384,7 +384,7 @@
           <input type="hidden" id="tmdbInput" value="" />
         </div>
         <div id="playerEmbedWrapper">
-          <!-- Carga inicial player Videasy por defecto -->
+          <!-- Carga inicial player Vidlink por defecto -->
           <iframe src="" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media" id="defaultPlayerIframe"></iframe>
           <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
             <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
@@ -411,7 +411,7 @@
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPlayerEmbed = "";
-  let currentPlayerName = "Videasy"; // Por defecto
+  let currentPlayerName = "Vidlink"; // Por defecto cambiado a Vidlink
   let currentMovieId = "";
   let currentPage = 1;
   let totalPages = 1;
@@ -449,7 +449,7 @@
     similarMovies.innerHTML = "";
     similarMoviesSection.style.display = "none";
     currentPlayerEmbed = "";
-    currentPlayerName = "Videasy";
+    currentPlayerName = "Vidlink";
     currentMovieId = "";
     currentPage = 1;
     const currentTitle = document.getElementById("titleInput").value.trim();
@@ -501,7 +501,7 @@
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
     playerEmbedWrapper.innerHTML = `
-      <iframe src="https://player.videasy.net/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>
+      <iframe src="https://vidlink.pro/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>
       <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
         <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
         <span>EXTENSIÓN PARA SUBTÍTULOS</span>
@@ -510,8 +510,8 @@
     dropdownContent.innerHTML = "";
     similarMovies.innerHTML = "";
     similarMoviesSection.style.display = "none";
-    currentPlayerEmbed = `https://player.videasy.net/movie/${movieId}`;
-    currentPlayerName = "Videasy";
+    currentPlayerEmbed = `https://vidlink.pro/movie/${movieId}`;
+    currentPlayerName = "Vidlink";
     currentMovieId = movieId;
 
     try {
@@ -699,6 +699,7 @@
 </script>
 </body>
 </html>
+
 
 
 
