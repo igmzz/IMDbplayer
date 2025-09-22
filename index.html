@@ -492,6 +492,40 @@
     document.getElementById("footballSection").style.display = (mode === "football") ? "block" : "none";
   }
 
+  // Función para actualizar paginación sin cambiar diseño ni llamadas
+  function updatePagination(container, type) {
+    container.innerHTML = "";
+    if (totalPages <= 1) return;
+    
+    const prevBtn = document.createElement("button");
+    prevBtn.textContent = "« Anterior";
+    prevBtn.disabled = currentPage <= 1;
+    prevBtn.onclick = () => {
+      if (currentPage > 1) {
+        currentPage--;
+        if(type === "movies") searchMovie(currentPage);
+      }
+    };
+    container.appendChild(prevBtn);
+
+    const pageInfo = document.createElement("span");
+    pageInfo.style.color = "#aad8ff";
+    pageInfo.style.margin = "0 15px";
+    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+    container.appendChild(pageInfo);
+
+    const nextBtn = document.createElement("button");
+    nextBtn.textContent = "Siguiente »";
+    nextBtn.disabled = currentPage >= totalPages;
+    nextBtn.onclick = () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        if(type === "movies") searchMovie(currentPage);
+      }
+    };
+    container.appendChild(nextBtn);
+  }
+
   // ---------- Películas -----------
 
   const results = document.getElementById("results");
