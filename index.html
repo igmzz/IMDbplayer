@@ -109,7 +109,7 @@
     gap: 30px 40px;
     padding: 0;
   }
-  .card {
+  .card, .subs-card {
     background: #02121e;
     width: 140px;
     border-radius: 18px;
@@ -121,7 +121,7 @@
     flex-direction: column;
     align-items: center;
   }
-  .card:hover {
+  .card:hover, .subs-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 15px 40px rgba(44, 156, 255, 0.7);
   }
@@ -132,7 +132,7 @@
     border-bottom: 4px solid #2c9cff;
     transition: transform 0.5s ease;
   }
-  .card:hover .poster {
+  .card:hover .poster, .subs-card:hover .poster {
     transform: scale(1.05);
   }
   .title {
@@ -356,6 +356,39 @@
   #subtitleExtensionBtn:hover span {
     opacity: 1;
   }
+  /* Nueva sección de info expandida para subs */
+  #subsInfoBox {
+    max-width: 800px;
+    margin: 20px auto 30px auto;
+    font-size: 16px;
+    line-height: 1.4;
+    padding: 20px;
+    background: rgba(0, 25, 50, 0.9);
+    border-radius: 26px;
+    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
+    text-align: center;
+    color: #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeSlideIn 0.5s forwards;
+  }
+  #subsInfoBox img {
+    width: 150px;
+    height: 225px;
+    object-fit: cover;
+    border-radius: 26px;
+    margin-bottom: 15px;
+  }
+  #subsInfoBox h3 {
+    color: #aad8ff;
+    margin-bottom: 10px;
+  }
+  #subsInfoBox p {
+    color: #ccc;
+    margin: 4px 0;
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
@@ -363,6 +396,7 @@
     <h2>IMDb Player</h2>
     <div id="modeSelector">
       <button onclick="showMode('movies')">Películas 🎬</button>
+      <button onclick="showMode('subs')">Subs 📝</button>
       <button onclick="showMode('football')">Fútbol ⚽</button>
     </div>
 
@@ -399,6 +433,17 @@
       </div>
     </div>
 
+    <!-- Subs Section -->
+    <div id="subsSection" style="display:none;">
+      <div id="subsSearchContainer" style="display:flex; justify-content:center; gap:15px; margin-bottom:25px;">
+        <input type="text" id="subsTitleInput" placeholder="Buscar película para subs..." />
+        <button class="action-btn" id="subsSearchBtn">Buscar</button>
+      </div>
+      <div id="subsResults" style="display:flex; flex-wrap: wrap; justify-content:center; gap:30px 40px;"></div>
+      <div id="subsInfoBox"></div>
+      <div id="subsPlayerEmbedWrapper" style="margin-top: 20px; width: 100%; height: 480px; max-width: 800px; margin-left: auto; margin-right: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000;"></div>
+    </div>
+
     <!-- Fútbol Section -->
     <div id="footballSection" style="display:none;">
       <div id="footballEmbedWrapper">
@@ -427,8 +472,11 @@
 
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
+    document.getElementById("subsSection").style.display = (mode === "subs") ? "block" : "none";
     document.getElementById("footballSection").style.display = (mode === "football") ? "block" : "none";
   }
+
+  // ---------- Películas -----------
 
   const results = document.getElementById("results");
   const tmdbInput = document.getElementById("tmdbInput");
@@ -444,7 +492,11 @@
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
-    playerEmbedWrapper.innerHTML = "";
+    playerEmbedWrapper.innerHTML = `<iframe src="" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media" id="defaultPlayerIframe"></iframe>
+          <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
+            <span>EXTENSIÓN PARA SUBTÍTULOS</span>
+          </a>`;
     dropdownContent.innerHTML = "";
     similarMovies.innerHTML = "";
     similarMoviesSection.style.display = "none";
@@ -694,6 +746,88 @@
     // El iframe default queda vacío hasta que se haga búsqueda o clic en película
     defaultPlayerIframe.src = "";
   });
+
+  // ---------- Subs Section ----------
+
+  const subsResults = document.getElementById("subsResults");
+  const subsPlayerEmbedWrapper = document.getElementById("subsPlayerEmbedWrapper");
+  const subsInfoBox = document.getElementById("subsInfoBox");
+
+  document.getElementById("subsSearchBtn").addEventListener("click", startSubsSearch);
+  document.getElementById("subsTitleInput").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      startSubsSearch();
+    }
+  });
+
+  async function startSubsSearch() {
+    const query = document.getElementById("subsTitleInput").value.trim();
+    if (!query) return;
+    subsResults.innerHTML = "";
+    subsPlayerEmbedWrapper.innerHTML = "";
+    subsInfoBox.innerHTML = "";
+    try {
+      // Buscar películas en TMDb (solo para obtener lista con IDs)
+      const url = `${tmdbBaseURL}/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}&language=es-ES`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDb");
+      const data = await response.json();
+      if (!data.results || data.results.length === 0) {
+        subsResults.innerHTML = "<p>No se encontraron resultados.</p>";
+        return;
+      }
+      data.results.forEach(movie => {
+        const card = document.createElement("div");
+        card.className = "subs-card";
+        const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : "---"})</div>`;
+        card.onclick = () => loadSubsByMovieId(movie.id);
+        subsResults.appendChild(card);
+      });
+    } catch (error) {
+      subsResults.innerHTML = `<p>Error al buscar películas: ${error.message}</p>`;
+    }
+  }
+
+  async function loadSubsByMovieId(movieId) {
+    // Limpia resultados para mostrar solo información y el iframe
+    subsResults.innerHTML = "";
+    subsPlayerEmbedWrapper.innerHTML = "";
+    subsInfoBox.innerHTML = "";
+    try {
+      // Obtener datos de película para conseguir código IMDb y TMDb
+      const detailsUrl = `${tmdbBaseURL}/movie/${movieId}?api_key=${tmdbApiKey}&language=es-ES`;
+      const detailsRes = await fetch(detailsUrl);
+      if (!detailsRes.ok) {
+        subsResults.innerHTML = "<p>Error al obtener datos de la película.</p>";
+        return;
+      }
+      const details = await detailsRes.json();
+      const imdbId = details.imdb_id || "N/D";
+      const tmdbId = details.id || "N/D";
+      const poster = details.poster_path ? `https://image.tmdb.org/t/p/w300${details.poster_path}` : "https://via.placeholder.com/150x225?text=No+Image";
+
+      // Mostrar información similar a la sección Películas
+      subsInfoBox.innerHTML = `
+        <img src="${poster}" alt="${details.title}" />
+        <h3>${details.title} (${details.release_date ? details.release_date.slice(0,4) : "---"})</h3>
+        <p><strong>IMDb ID:</strong> ${imdbId}</p>
+        <p><strong>TMDb ID:</strong> ${tmdbId}</p>
+      `;
+
+      // Mostrar embed de subdl.com con código IMDb si se tiene
+      if (imdbId !== "N/D") {
+        subsPlayerEmbedWrapper.innerHTML = `
+          <iframe src="https://subdl.com/imdb/${imdbId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>
+        `;
+      } else {
+        subsPlayerEmbedWrapper.innerHTML = "<p>No se encontró código IMDb para esta película.</p>";
+      }
+    } catch (error) {
+      subsResults.innerHTML = `<p>Error al cargar subtítulos: ${error.message}</p>`;
+    }
+  }
 
   showMode("movies");
 </script>
