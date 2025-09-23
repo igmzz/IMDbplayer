@@ -312,11 +312,33 @@
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
+    position: relative;
   }
   #footballEmbedWrapper iframe {
     width: 100%;
     height: 100%;
     border: none;
+  }
+  /* Dropdown fútbol */
+  #footballDropdown {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10001;
+  }
+  #footballDropdown select {
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    background-color: #001a33;
+    color: #aad8ff;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s ease;
+  }
+  #footballDropdown select:hover {
+    background-color: #003166;
   }
   /* Botón circular para extensión de subtítulos en verde */
   #subtitleExtensionBtn {
@@ -340,7 +362,7 @@
     transition: width 0.4s ease, padding 0.4s ease;
     padding: 0;
     text-decoration: none;
-    z-index: 10001;
+    z-index: 10002;
   }
   #subtitleExtensionBtn:hover {
     width: 180px;
@@ -388,6 +410,23 @@
     color: #ccc;
     margin: 4px 0;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  #subsInfoBox button.copy-btn {
+    background: #2c9cff;
+    border: none;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #subsInfoBox button.copy-btn:hover {
+    background: #1a7ed1;
   }
   #opensubLinkBox {
     margin-top: 15px;
@@ -434,7 +473,7 @@
           <input type="hidden" id="tmdbInput" value="" />
         </div>
         <div id="playerEmbedWrapper">
-          <!-- Carga inicial player Vidlink por defecto -->
+          <!-- Carga inicial player Videasy por defecto -->
           <iframe src="" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media" id="defaultPlayerIframe"></iframe>
           <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
             <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
@@ -463,7 +502,14 @@
     <!-- Fútbol Section -->
     <div id="footballSection" style="display:none;">
       <div id="footballEmbedWrapper">
-        <iframe src="https://rivestream.org/livesports" allowfullscreen allow="encrypted-media"></iframe>
+        <div id="footballDropdown">
+          <select id="footballSiteSelect" aria-label="Seleccionar sitio de fútbol">
+            <option value="https://rivestream.org/livesports" selected>Rivestream</option>
+            <option value="https://streamed.pk/">Streamed.pk</option>
+            <option value="https://ovogoaal.com/">Ovogoaal</option>
+          </select>
+        </div>
+        <iframe src="https://rivestream.org/livesports" allowfullscreen allow="encrypted-media" id="footballIframe"></iframe>
       </div>
     </div>
   </div>
@@ -472,7 +518,7 @@
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentPlayerEmbed = "";
-  let currentPlayerName = "Vidlink"; // Por defecto cambiado a Vidlink
+  let currentPlayerName = "Videasy"; // Por defecto cambiado a Videasy
   let currentMovieId = "";
   let currentPage = 1;
   let totalPages = 1;
@@ -551,7 +597,7 @@
     similarMovies.innerHTML = "";
     similarMoviesSection.style.display = "none";
     currentPlayerEmbed = "";
-    currentPlayerName = "Vidlink";
+    currentPlayerName = "Videasy";
     currentMovieId = "";
     currentPage = 1;
     const currentTitle = document.getElementById("titleInput").value.trim();
@@ -602,8 +648,9 @@
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
+    // Usar Videasy como player por defecto
     playerEmbedWrapper.innerHTML = `
-      <iframe src="https://vidlink.pro/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>
+      <iframe src="https://player.videasy.net/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>
       <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
         <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
         <span>EXTENSIÓN PARA SUBTÍTULOS</span>
@@ -612,8 +659,8 @@
     dropdownContent.innerHTML = "";
     similarMovies.innerHTML = "";
     similarMoviesSection.style.display = "none";
-    currentPlayerEmbed = `https://vidlink.pro/movie/${movieId}`;
-    currentPlayerName = "Vidlink";
+    currentPlayerEmbed = `https://player.videasy.net/movie/${movieId}`;
+    currentPlayerName = "Videasy";
     currentMovieId = movieId;
 
     try {
@@ -662,7 +709,6 @@
     const players = [
       {name: "Videasy", embed: `<iframe src="https://player.videasy.net/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
       {name: "Vidfast", embed: `<iframe src="https://vidfast.pro/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
-      {name: "Vidlink", embed: `<iframe src="https://vidlink.pro/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
       {name: "VidSrc", embed: `<iframe src="https://vidsrc.xyz/embed/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`}
     ];
     players.forEach((player) => {
@@ -761,11 +807,14 @@
     }
   }
 
-  // Al cargar la página, muestra un iframe vacío esperando búsqueda
-  document.addEventListener("DOMContentLoaded", () => {
-    // El iframe default queda vacío hasta que se haga búsqueda o clic en película
-    defaultPlayerIframe.src = "";
-  });
+  // Copiar al portapapeles función genérica
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Copiado al portapapeles: " + text);
+    }).catch(() => {
+      alert("No se pudo copiar al portapapeles");
+    });
+  }
 
   // ---------- Subs Section ----------
 
@@ -810,7 +859,7 @@
     }
   }
 
-  // Función modificada: mostrar solo enlace a OpenSubtitles usando título original en inglés
+  // Mostrar enlace dinámico con imdb code en la URL y agregar botones copiar
   async function loadSubsByMovieId(movieId) {
     subsResults.innerHTML = "";
     subsPlayerEmbedWrapper.innerHTML = "";
@@ -825,16 +874,20 @@
       const details = await detailsRes.json();
       const year = details.release_date ? details.release_date.slice(0,4) : "";
       const originalTitle = details.original_title || details.title || "";
-      const titleSlug = slugify(originalTitle);
       const poster = details.poster_path ? `https://image.tmdb.org/t/p/w300${details.poster_path}` : "https://via.placeholder.com/150x225?text=No+Image";
+      const imdbId = details.imdb_id || "N/D";
+      const tmdbId = details.id || "N/D";
+
+      // Crear URL con imdbId para subtítulos en opensubtitles con la estructura pedida
+      const openSubUrl = `https://www.opensubtitles.com/en/es/search-all/q-${imdbId}/hearing_impaired-include/machine_translated-/trusted_sources-`;
 
       subsInfoBox.innerHTML = `
         <img src="${poster}" alt="${originalTitle}" />
         <h3>${details.title} (${year})</h3>
-        <p><strong>IMDb ID:</strong> ${details.imdb_id || "N/D"}</p>
-        <p><strong>TMDb ID:</strong> ${details.id || "N/D"}</p>
+        <p><strong>IMDb ID:</strong> ${imdbId} <button class="copy-btn" onclick="copyToClipboard('${imdbId}')">Copiar</button></p>
+        <p><strong>TMDb ID:</strong> ${tmdbId} <button class="copy-btn" onclick="copyToClipboard('${tmdbId}')">Copiar</button></p>
         <div id="opensubLinkBox">
-          <a href="https://www.opensubtitles.org/es">
+          <a href="${openSubUrl}" target="_blank" rel="noopener noreferrer">
           Ver subtítulos en OpenSubtitles
           </a>
         </div>
@@ -843,6 +896,15 @@
       subsResults.innerHTML = `<p>Error al cargar subtítulos: ${error.message}</p>`;
     }
   }
+
+  // Cambio de iframe fútbol al seleccionar en desplegable
+  const footballSiteSelect = document.getElementById("footballSiteSelect");
+  const footballIframe = document.getElementById("footballIframe");
+
+  footballSiteSelect.addEventListener("change", () => {
+    const url = footballSiteSelect.value;
+    footballIframe.src = url;
+  });
 
   showMode("movies");
 </script>
