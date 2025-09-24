@@ -194,65 +194,58 @@
     margin-top: 10px;
     position: relative;
   }
-  .dropdown {
-    position: relative;
-    display: inline-block;
+
+  /* Modal Styles */
+  #playerChoiceModal {
+    display: none;
+    position: fixed;
+    z-index: 20000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
   }
-  .dropbtn {
-    background-color: #001a33;
-    color: white;
-    padding: 14px 18px;
-    font-size: 16px;
+  #playerChoiceContent {
+    background: #001a33;
+    border-radius: 20px;
+    padding: 30px;
+    width: 320px;
+    box-shadow: 0 12px 40px rgba(44, 156, 255, 0.8);
+    text-align: center;
+    color: #aad8ff;
+  }
+  #playerChoiceContent h3 {
+    margin-bottom: 20px;
+    color: #2c9cff;
+  }
+  .playerChoiceBtn {
+    background: #2c9cff;
     border: none;
+    color: #fff;
+    font-size: 18px;
+    padding: 14px 0;
+    margin: 10px 0;
     border-radius: 12px;
+    width: 100%;
     cursor: pointer;
     transition: background 0.3s ease;
   }
-  .dropbtn:hover {
-    background-color: #003166;
+  .playerChoiceBtn:hover {
+    background: #1a7ed1;
   }
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    left: 0;
-    background-color: #001a33;
-    min-width: 180px;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.6);
-    z-index: 10000;
-    overflow: hidden;
-    margin-top: 6px;
-  }
-  .dropdown-content button {
-    background: none;
-    color: #aad8ff;
-    padding: 12px 16px;
+  #playerChoiceCancelBtn {
+    background: transparent;
     border: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
+    color: #888;
+    margin-top: 15px;
     font-size: 14px;
-    transition: background 0.2s ease;
+    cursor: pointer;
   }
-  .dropdown-content button:hover {
-    background-color: #2c9cff;
-    color: white;
-  }
-  .show {
-    display: block;
-  }
-  #playerEmbedWrapper {
-    margin-top: 20px;
-    width: 100%;
-    height: 480px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
-    background: #000;
-    position: relative;
+  #playerChoiceCancelBtn:hover {
+    color: #2c9cff;
   }
   #movieSynopsisBox {
     max-width: 800px;
@@ -465,16 +458,12 @@
       <div id="moviesPagination" class="pagination"></div>
       <div id="playerWrapper">
         <div id="playerControls">
-          <div class="dropdown">
-            <button onclick="toggleDropdown()" class="dropbtn" id="dropdownBtn">Reproductores ▼</button>
-            <div id="dropdownContent" class="dropdown-content"></div>
-          </div>
-          <button class="action-btn" id="loadMovieBtn" onclick="openSelectedPlayer()">▶️ Cargar película</button>
+          <!-- Eliminado el dropdown previo según requerimiento -->
+          <button class="action-btn" id="loadMovieBtn" onclick="openPlayerChoiceModal()">▶️ Cargar película</button>
           <input type="hidden" id="tmdbInput" value="" />
         </div>
         <div id="playerEmbedWrapper">
-          <!-- Carga inicial player Videasy por defecto -->
-          <iframe src="" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media" id="defaultPlayerIframe"></iframe>
+          <!-- Eliminado iframe embed por defecto -->
           <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
             <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
             <span>EXTENSIÓN PARA SUBTÍTULOS</span>
@@ -514,11 +503,20 @@
     </div>
   </div>
 
+  <!-- Modal para selección de reproductor -->
+  <div id="playerChoiceModal" role="dialog" aria-modal="true" aria-labelledby="playerChoiceTitle">
+    <div id="playerChoiceContent">
+      <h3 id="playerChoiceTitle">Selecciona el reproductor para la película</h3>
+      <button class="playerChoiceBtn" data-player="Videasy">Videasy</button>
+      <button class="playerChoiceBtn" data-player="Vidfast">Vidfast</button>
+      <button class="playerChoiceBtn" data-player="VidSrc">VidSrc</button>
+      <button id="playerChoiceCancelBtn">Cancelar</button>
+    </div>
+  </div>
+
 <script>
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
-  let currentPlayerEmbed = "";
-  let currentPlayerName = "Videasy"; // Por defecto cambiado a Videasy
   let currentMovieId = "";
   let currentPage = 1;
   let totalPages = 1;
@@ -578,26 +576,11 @@
   const tmdbInput = document.getElementById("tmdbInput");
   const moviesPagination = document.getElementById("moviesPagination");
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
-  const playerEmbedWrapper = document.getElementById("playerEmbedWrapper");
-  const dropdownContent = document.getElementById("dropdownContent");
-  const similarMoviesSection = document.getElementById("similarMoviesSection");
-  const similarMovies = document.getElementById("similarMovies");
-  const defaultPlayerIframe = document.getElementById("defaultPlayerIframe");
 
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
-    playerEmbedWrapper.innerHTML = `<iframe src="" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media" id="defaultPlayerIframe"></iframe>
-          <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
-            <span>EXTENSIÓN PARA SUBTÍTULOS</span>
-          </a>`;
-    dropdownContent.innerHTML = "";
-    similarMovies.innerHTML = "";
-    similarMoviesSection.style.display = "none";
-    currentPlayerEmbed = "";
-    currentPlayerName = "Videasy";
     currentMovieId = "";
     currentPage = 1;
     const currentTitle = document.getElementById("titleInput").value.trim();
@@ -648,21 +631,7 @@
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
-    // Usar Videasy como player por defecto
-    playerEmbedWrapper.innerHTML = `
-      <iframe src="https://player.videasy.net/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>
-      <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
-        <span>EXTENSIÓN PARA SUBTÍTULOS</span>
-      </a>`;
-    movieSynopsisBox.innerHTML = "";
-    dropdownContent.innerHTML = "";
-    similarMovies.innerHTML = "";
-    similarMoviesSection.style.display = "none";
-    currentPlayerEmbed = `https://player.videasy.net/movie/${movieId}`;
-    currentPlayerName = "Videasy";
-    currentMovieId = movieId;
-
+    currentMovieId = "";
     try {
       const detailsUrl = `${tmdbBaseURL}/movie/${movieId}?api_key=${tmdbApiKey}&language=es-ES&append_to_response=credits,external_ids`;
       const detailsRes = await fetch(detailsUrl);
@@ -694,127 +663,57 @@
       tmdbInput.value = details.id || "";
       tmdbInput.setAttribute("data-title", slugify(details.title));
       movieSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || "Sinopsis no disponible."}`;
-      createPlayerDropdown(details.id);
 
-      const genreIds = details.genres.map(g => g.id).join(",");
-      const year = details.release_date ? details.release_date.slice(0,4) : "";
-      await loadSimilarMoviesAdvanced(genreIds, year, countries, castTop5.map(c => c.id), details.id);
+      currentMovieId = details.id;
+      // Removemos dropdown anterior y botón de cargar para que funcione nuevo modal (ya manejado fuera)
     } catch (error) {
       results.innerHTML = `<p>Error al cargar detalles: ${error.message}</p>`;
     }
   }
 
-  function createPlayerDropdown(movieId) {
-    dropdownContent.innerHTML = "";
-    const players = [
-      {name: "Videasy", embed: `<iframe src="https://player.videasy.net/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
-      {name: "Vidfast", embed: `<iframe src="https://vidfast.pro/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`},
-      {name: "VidSrc", embed: `<iframe src="https://vidsrc.xyz/embed/movie/${movieId}" width="100%" height="480" frameborder="0" allowfullscreen allow="encrypted-media"></iframe>`}
-    ];
-    players.forEach((player) => {
-      const btn = document.createElement("button");
-      btn.textContent = player.name;
-      btn.onclick = () => {
-        currentPlayerEmbed = player.embed;
-        document.getElementById("dropdownBtn").textContent = player.name + " ▼";
-        dropdownContent.classList.remove("show");
-        playerEmbedWrapper.innerHTML = currentPlayerEmbed + `
-          <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
-            <span>EXTENSIÓN PARA SUBTÍTULOS</span>
-          </a>`;
-        currentPlayerName = player.name;
-      };
-      dropdownContent.appendChild(btn);
+  // Función para abrir modal de selección de reproductor
+  const playerChoiceModal = document.getElementById("playerChoiceModal");
+  const playerChoiceButtons = playerChoiceModal.querySelectorAll(".playerChoiceBtn");
+  const playerChoiceCancelBtn = document.getElementById("playerChoiceCancelBtn");
+
+  function openPlayerChoiceModal() {
+    if (!currentMovieId) {
+      alert("Por favor, selecciona primero una película haciendo clic en alguna tarjeta.");
+      return;
+    }
+    playerChoiceModal.style.display = "flex";
+  }
+
+  playerChoiceCancelBtn.addEventListener("click", () => {
+    playerChoiceModal.style.display = "none";
+  });
+
+  playerChoiceButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      const player = button.getAttribute("data-player");
+      let url = "";
+      switch(player) {
+        case "Videasy":
+          url = `https://player.videasy.net/movie/${currentMovieId}`;
+          break;
+        case "Vidfast":
+          url = `https://vidfast.pro/movie/${currentMovieId}`;
+          break;
+        case "VidSrc":
+          url = `https://vidsrc.xyz/embed/movie/${currentMovieId}`;
+          break;
+      }
+      playerChoiceModal.style.display = "none";
+      if (url) window.open(url, "_blank");
     });
-  }
+  });
 
-  function toggleDropdown() {
-    dropdownContent.classList.toggle("show");
-  }
-
-  window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-      if (dropdownContent.classList.contains('show')) {
-        dropdownContent.classList.remove('show');
-      }
+  // Cerramos modal si hacemos clic fuera del contenido
+  window.addEventListener("click", (event) => {
+    if (event.target === playerChoiceModal) {
+      playerChoiceModal.style.display = "none";
     }
-  };
-
-  function openSelectedPlayer() {
-    if (currentPlayerEmbed) {
-      playerEmbedWrapper.innerHTML = currentPlayerEmbed + `
-          <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
-            <span>EXTENSIÓN PARA SUBTÍTULOS</span>
-          </a>`;
-    } else {
-      alert("Por favor, selecciona primero un reproductor del desplegable.");
-    }
-  }
-
-  async function loadSimilarMoviesAdvanced(genreIds, year, countries, actorIds, excludeMovieId) {
-    try {
-      const url = `${tmdbBaseURL}/discover/movie?api_key=${tmdbApiKey}&language=es-ES&with_genres=${genreIds}&primary_release_year=${year}&sort_by=popularity.desc&page=1`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Error obteniendo películas similares");
-      const data = await response.json();
-      if (!data.results || data.results.length === 0) {
-        similarMoviesSection.style.display = "none";
-        return;
-      }
-      const filteredResults = [];
-      const candidates = data.results.slice(0, 20);
-      for (const movie of candidates) {
-        if (movie.id === excludeMovieId) continue;
-        const hasSameCountry = movie.production_countries 
-          ? movie.production_countries.some(c => countries.includes(c.iso_3166_1)) 
-          : false;
-        if (!hasSameCountry) continue;
-        try {
-          const creditsResp = await fetch(`${tmdbBaseURL}/movie/${movie.id}/credits?api_key=${tmdbApiKey}&language=es-ES`);
-          if (!creditsResp.ok) continue;
-          const credits = await creditsResp.json();
-          const castIds = credits.cast.map(c => c.id);
-          const commonActors = actorIds.filter(id => castIds.includes(id));
-          if (commonActors.length > 0 || hasSameCountry) {
-            filteredResults.push(movie);
-            if (filteredResults.length >= 12) break;
-          }
-        } catch {
-          continue;
-        }
-      }
-      if (filteredResults.length === 0) {
-        similarMoviesSection.style.display = "none";
-        return;
-      }
-      similarMoviesSection.style.display = "block";
-      similarMovies.innerHTML = "";
-      filteredResults.forEach(similar => {
-        const poster = similar.poster_path ? `https://image.tmdb.org/t/p/w200${similar.poster_path}` : "https://via.placeholder.com/120x170?text=No+Image";
-        const card = document.createElement("div");
-        card.className = "similar-card";
-        card.innerHTML = `
-          <img class="similar-poster" src="${poster}" alt="${similar.title}" />
-          <div class="similar-title">${similar.title} (${similar.release_date ? similar.release_date.slice(0,4) : "---"})</div>
-        `;
-        card.onclick = () => loadMovieDetails(similar.id);
-        similarMovies.appendChild(card);
-      });
-    } catch {
-      similarMoviesSection.style.display = "none";
-    }
-  }
-
-  // Copiar al portapapeles función genérica
-  function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-      alert("Copiado al portapapeles: " + text);
-    }).catch(() => {
-      alert("No se pudo copiar al portapapeles");
-    });
-  }
+  });
 
   // ---------- Subs Section ----------
 
@@ -859,7 +758,6 @@
     }
   }
 
-  // Mostrar enlace dinámico con imdb code en la URL y agregar botones copiar
   async function loadSubsByMovieId(movieId) {
     subsResults.innerHTML = "";
     subsPlayerEmbedWrapper.innerHTML = "";
@@ -895,6 +793,15 @@
     } catch (error) {
       subsResults.innerHTML = `<p>Error al cargar subtítulos: ${error.message}</p>`;
     }
+  }
+
+  // Copiar al portapapeles función genérica
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Copiado al portapapeles: " + text);
+    }).catch(() => {
+      alert("No se pudo copiar al portapapeles");
+    });
   }
 
   // Cambio de iframe fútbol al seleccionar en desplegable
