@@ -938,7 +938,7 @@
     // Construir URLs para los reproductores
     const videasyUrl = `https://player.videasy.net/tv/${currentSeriesId}/${selectedSeason}/${selectedEpisode}`;
     const vidfastUrl = `https://vidfast.pro/tv/${currentSeriesId}/${selectedSeason}/${selectedEpisode}`;
-    const vidsrcUrl = `https://vidsrc.xyz/embed/tv/${currentSeriesId}/season-${selectedSeason}-episode-${selectedEpisode}`;
+    const vidsrcUrl = `https://vidsrc.xyz/embed/tv/${currentSeriesId}/${selectedSeason}/${selectedEpisode}`;
 
     // Mostrar modal con opciones para reproductor (reusamos el modal existente con cambio temporal en botones)
     openPlayerChoiceModalSeries(videasyUrl, vidfastUrl, vidsrcUrl);
@@ -1044,6 +1044,7 @@
 </script>
 </body>
 </html>
+
 
 
 
