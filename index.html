@@ -437,6 +437,49 @@
   #opensubLinkBox a:hover {
     text-decoration: underline;
   }
+
+  /* Series Section */
+  #seriesSection {
+    display: none;
+  }
+  #seriesSearchContainer {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  #seriesResults {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px 40px;
+  }
+  #seriesControls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+  }
+  #seriesControls input[type="number"] {
+    width: 90px;
+    padding: 10px 12px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    background: rgba(0, 25, 50, 0.6);
+    color: #fff;
+    transition: background 0.3s ease;
+  }
+  #seriesControls input[type="number"]::placeholder {
+    color: #bbb;
+  }
+  #seriesControls input[type="number"]:focus {
+    background: rgba(0, 25, 50, 0.85);
+    transform: scale(1.05);
+  }
 </style>
 </head>
 <body>
@@ -445,6 +488,7 @@
     <div id="modeSelector">
       <button onclick="showMode('movies')">Películas 🎬</button>
       <button onclick="showMode('subs')">Subs 📝</button>
+      <button onclick="showMode('series')">Series 📺</button>
       <button onclick="showMode('football')">Fútbol ⚽</button>
     </div>
 
@@ -488,6 +532,20 @@
       <div id="subsPlayerEmbedWrapper" style="margin-top: 20px; width: 100%; height: 480px; max-width: 800px; margin-left: auto; margin-right: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000;"></div>
     </div>
 
+    <!-- Series Section -->
+    <div id="seriesSection" style="display:none;">
+      <div id="seriesSearchContainer">
+        <input type="text" id="seriesTitleInput" placeholder="Buscar serie..." />
+        <button class="action-btn" id="seriesSearchBtn">Buscar</button>
+      </div>
+      <div id="seriesResults"></div>
+      <div id="seriesControls" style="display:none;">
+        <input type="number" id="seasonInput" placeholder="Temporada" min="1" />
+        <input type="number" id="episodeInput" placeholder="Episodio" min="1" />
+        <button class="action-btn" id="loadSeriesBtn">▶️ Cargar película</button>
+      </div>
+    </div>
+
     <!-- Fútbol Section -->
     <div id="footballSection" style="display:none;">
       <div id="footballEmbedWrapper">
@@ -521,6 +579,11 @@
   let currentPage = 1;
   let totalPages = 1;
 
+  // Series section variables
+  let currentSeriesId = "";
+  let selectedSeason = null;
+  let selectedEpisode = null;
+
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
@@ -533,6 +596,7 @@
   function showMode(mode) {
     document.getElementById("moviesSection").style.display = (mode === "movies") ? "block" : "none";
     document.getElementById("subsSection").style.display = (mode === "subs") ? "block" : "none";
+    document.getElementById("seriesSection").style.display = (mode === "series") ? "block" : "none";
     document.getElementById("footballSection").style.display = (mode === "football") ? "block" : "none";
   }
 
@@ -795,6 +859,160 @@
     }
   }
 
+  // ---------- Series Section ----------
+
+  const seriesResults = document.getElementById("seriesResults");
+  const seriesTitleInput = document.getElementById("seriesTitleInput");
+  const seriesSearchBtn = document.getElementById("seriesSearchBtn");
+  const seriesControls = document.getElementById("seriesControls");
+  const seasonInput = document.getElementById("seasonInput");
+  const episodeInput = document.getElementById("episodeInput");
+  const loadSeriesBtn = document.getElementById("loadSeriesBtn");
+
+  seriesSearchBtn.addEventListener("click", startSeriesSearch);
+  seriesTitleInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      startSeriesSearch();
+    }
+  });
+
+  async function startSeriesSearch() {
+    const query = seriesTitleInput.value.trim();
+    if (!query) return;
+    seriesResults.innerHTML = "";
+    seriesControls.style.display = "none";
+    currentSeriesId = "";
+    try {
+      const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}&language=es-ES`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await response.json();
+      if (!data.results || data.results.length === 0) {
+        seriesResults.innerHTML = "<p>No se encontraron resultados.</p>";
+        return;
+      }
+      data.results.forEach(show => {
+        const card = document.createElement("div");
+        card.className = "subs-card";
+        const poster = show.poster_path ? `https://image.tmdb.org/t/p/w200${show.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${show.name} (${show.first_air_date ? show.first_air_date.slice(0,4) : "---"})</div>`;
+        card.onclick = () => loadSeriesById(show.id);
+        seriesResults.appendChild(card);
+      });
+    } catch (error) {
+      seriesResults.innerHTML = `<p>Error al buscar series: ${error.message}</p>`;
+    }
+  }
+
+  async function loadSeriesById(seriesId) {
+    seriesResults.innerHTML = "";
+    seriesControls.style.display = "flex"; // Mostrar controles de temporada y episodio
+    currentSeriesId = seriesId;
+    seasonInput.value = "";
+    episodeInput.value = "";
+  }
+
+  // Cargar enlaces de reproductores para la serie según temporada y episodio
+  loadSeriesBtn.addEventListener("click", () => {
+    if (!currentSeriesId) {
+      alert("Por favor, selecciona primero una serie haciendo clic en alguna tarjeta.");
+      return;
+    }
+    selectedSeason = seasonInput.value.trim();
+    selectedEpisode = episodeInput.value.trim();
+    if (!selectedSeason || !selectedEpisode || isNaN(selectedSeason) || isNaN(selectedEpisode) || selectedSeason < 1 || selectedEpisode < 1) {
+      alert("Por favor, ingresa un número válido para temporada y episodio.");
+      return;
+    }
+
+    // Construir URLs para los reproductores
+    const videasyUrl = `https://player.videasy.net/tv/${currentSeriesId}/${selectedSeason}/${selectedEpisode}`;
+    const vidfastUrl = `https://vidfast.pro/tv/${currentSeriesId}/${selectedSeason}/${selectedEpisode}`;
+    const vidsrcUrl = `https://vidsrc.xyz/embed/tv/${currentSeriesId}/season-${selectedSeason}-episode-${selectedEpisode}`;
+
+    // Mostrar modal con opciones para reproductor (reusamos el modal existente con cambio temporal en botones)
+    openPlayerChoiceModalSeries(videasyUrl, vidfastUrl, vidsrcUrl);
+  });
+
+  function openPlayerChoiceModalSeries(videasyUrl, vidfastUrl, vidsrcUrl) {
+    const modal = playerChoiceModal;
+    const content = playerChoiceModal.querySelector("#playerChoiceContent");
+
+    // Cambiamos contenido para reproductores series
+    content.innerHTML = `
+      <h3 id="playerChoiceTitle">Selecciona el reproductor para la serie</h3>
+      <button class="playerChoiceBtn" data-url="${videasyUrl}">Videasy</button>
+      <button class="playerChoiceBtn" data-url="${vidfastUrl}">Vidfast</button>
+      <button class="playerChoiceBtn" data-url="${vidsrcUrl}">VidSrc</button>
+      <button id="playerChoiceCancelBtn">Cancelar</button>
+    `;
+
+    modal.style.display = "flex";
+
+    // Añadimos eventos a botones nuevos
+    content.querySelectorAll(".playerChoiceBtn").forEach(button => {
+      button.addEventListener("click", () => {
+        const url = button.getAttribute("data-url");
+        modal.style.display = "none";
+        if (url) window.open(url, "_blank");
+      });
+    });
+
+    // Evento para cancelar
+    content.querySelector("#playerChoiceCancelBtn").addEventListener("click", () => {
+      modal.style.display = "none";
+      // Restaurar modal original para películas al cerrar
+      restorePlayerChoiceModal();
+    });
+
+    // Cerrar modal click fuera
+    window.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        modal.style.display = "none";
+        restorePlayerChoiceModal();
+      }
+    }, { once: true });
+  }
+
+  function restorePlayerChoiceModal() {
+    const content = playerChoiceModal.querySelector("#playerChoiceContent");
+    content.innerHTML = `
+      <h3 id="playerChoiceTitle">Selecciona el reproductor para la película</h3>
+      <button class="playerChoiceBtn" data-player="Videasy">Videasy</button>
+      <button class="playerChoiceBtn" data-player="Vidfast">Vidfast</button>
+      <button class="playerChoiceBtn" data-player="VidSrc">VidSrc</button>
+      <button id="playerChoiceCancelBtn">Cancelar</button>
+    `;
+
+    // Vuelven a funcionar eventos normales para películas
+    const buttons = content.querySelectorAll(".playerChoiceBtn");
+    buttons.forEach(button => {
+      button.addEventListener("click", () => {
+        const player = button.getAttribute("data-player");
+        let url = "";
+        switch(player) {
+          case "Videasy":
+            url = `https://player.videasy.net/movie/${currentMovieId}`;
+            break;
+          case "Vidfast":
+            url = `https://vidfast.pro/movie/${currentMovieId}`;
+            break;
+          case "VidSrc":
+            url = `https://vidsrc.xyz/embed/movie/${currentMovieId}`;
+            break;
+        }
+        playerChoiceModal.style.display = "none";
+        if (url) window.open(url, "_blank");
+      });
+    });
+
+    const cancelBtn = content.querySelector("#playerChoiceCancelBtn");
+    cancelBtn.addEventListener("click", () => {
+      playerChoiceModal.style.display = "none";
+    });
+  }
+
   // Copiar al portapapeles función genérica
   function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
@@ -817,7 +1035,6 @@
 </script>
 </body>
 </html>
-
 
 
 
