@@ -729,7 +729,6 @@
       movieSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || "Sinopsis no disponible."}`;
 
       currentMovieId = details.id;
-      // Removemos dropdown anterior y botón de cargar para que funcione nuevo modal (ya manejado fuera)
     } catch (error) {
       results.innerHTML = `<p>Error al cargar detalles: ${error.message}</p>`;
     }
@@ -822,6 +821,15 @@
     }
   }
 
+  // Nueva función auxiliar para formatear imdbId para opensubtitles.org
+  function formatImdbIdForOpenSub(imdbId) {
+    if (!imdbId) return "";
+    // Quitar prefijo tt, ceros delante del primer número significativo
+    let numPart = imdbId.toLowerCase().replace(/^tt/, "");
+    numPart = numPart.replace(/^0+/, "");
+    return numPart;
+  }
+
   async function loadSubsByMovieId(movieId) {
     subsResults.innerHTML = "";
     subsPlayerEmbedWrapper.innerHTML = "";
@@ -837,20 +845,21 @@
       const year = details.release_date ? details.release_date.slice(0,4) : "";
       const originalTitle = details.original_title || details.title || "";
       const poster = details.poster_path ? `https://image.tmdb.org/t/p/w300${details.poster_path}` : "https://via.placeholder.com/150x225?text=No+Image";
-      const imdbId = details.imdb_id || "N/D";
+      const imdbIdRaw = details.imdb_id || "";
+      const imdbIdFormatted = formatImdbIdForOpenSub(imdbIdRaw);
       const tmdbId = details.id || "N/D";
 
-      // Crear URL con imdbId para subtítulos en opensubtitles con la estructura pedida
-      const openSubUrl = `https://www.opensubtitles.com/en/es/search-all/q-${imdbId}/hearing_impaired-include/machine_translated-/trusted_sources-`;
+      // url modificada para opensubtitles.org en español con ssp=spa y imdbid formateado
+      const openSubUrl = `https://www.opensubtitles.org/es/search/sublanguageid-spa/moviefps-23.976/imdbid-${imdbIdFormatted}`;
 
       subsInfoBox.innerHTML = `
         <img src="${poster}" alt="${originalTitle}" />
         <h3>${details.title} (${year})</h3>
-        <p><strong>IMDb ID:</strong> ${imdbId} <button class="copy-btn" onclick="copyToClipboard('${imdbId}')">Copiar</button></p>
+        <p><strong>IMDb ID:</strong> ${imdbIdRaw} <button class="copy-btn" onclick="copyToClipboard('${imdbIdRaw}')">Copiar</button></p>
         <p><strong>TMDb ID:</strong> ${tmdbId} <button class="copy-btn" onclick="copyToClipboard('${tmdbId}')">Copiar</button></p>
         <div id="opensubLinkBox">
-          <a href="${openSubUrl}" target="_blank" rel="noopener noreferrer">
-          Ver subtítulos en OpenSubtitles
+          <a href="${openSubUrl}" target="_blank" rel="noopener noreferrer" aria-label="Ver subtítulos en OpenSubtitles para ${details.title}">
+            Ver subtítulos en OpenSubtitles
           </a>
         </div>
       `;
@@ -1035,13 +1044,6 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
 
 
 
