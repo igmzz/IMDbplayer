@@ -765,6 +765,9 @@
         case "VidSrc":
           url = `https://vidsrc.xyz/embed/movie/${currentMovieId}`;
           break;
+        case "VidLink":
+          url = `https://vidlink.pro/movie/${currentMovieId}`;
+          break;
       }
       playerChoiceModal.style.display = "none";
       if (url) window.open(url, "_blank");
@@ -1044,6 +1047,7 @@
 </script>
 </body>
 </html>
+
 
 
 
