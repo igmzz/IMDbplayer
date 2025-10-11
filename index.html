@@ -507,7 +507,8 @@
           <input type="hidden" id="tmdbInput" value="" />
         </div>
         <div id="playerEmbedWrapper">
-          <!-- Eliminado iframe embed por defecto -->
+          <!-- Embebido del reproductor por defecto: IVW -->
+          <iframe id="moviePlayerIframe" src="" width="100%" height="480" style="border:none; border-radius: 16px; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000;"></iframe>
           <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
             <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
             <span>EXTENSIÓN PARA SUBTÍTULOS</span>
@@ -565,9 +566,8 @@
   <div id="playerChoiceModal" role="dialog" aria-modal="true" aria-labelledby="playerChoiceTitle">
     <div id="playerChoiceContent">
       <h3 id="playerChoiceTitle">Selecciona el reproductor para la película</h3>
-      <button class="playerChoiceBtn" data-player="Videasy">Videasy</button>
-      <button class="playerChoiceBtn" data-player="Vidfast">Vidfast</button>
       <button class="playerChoiceBtn" data-player="VidSrc">VidSrc</button>
+      <button class="playerChoiceBtn" data-player="IVW">IVW</button>
       <button id="playerChoiceCancelBtn">Cancelar</button>
     </div>
   </div>
@@ -640,13 +640,13 @@
   const tmdbInput = document.getElementById("tmdbInput");
   const moviesPagination = document.getElementById("moviesPagination");
   const movieSynopsisBox = document.getElementById("movieSynopsisBox");
+  const moviePlayerIframe = document.getElementById("moviePlayerIframe");
 
   async function startSearch() {
     results.innerHTML = "";
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
     currentMovieId = "";
-    currentPage = 1;
     const currentTitle = document.getElementById("titleInput").value.trim();
     if (!currentTitle) return;
     await searchMovie(currentPage);
@@ -729,6 +729,13 @@
       movieSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || "Sinopsis no disponible."}`;
 
       currentMovieId = details.id;
+
+      // Por defecto cargar IVW
+      if(currentMovieId){
+        moviePlayerIframe.src = `https://rivestream.org/watch?type=movie&id=${currentMovieId}`;
+      } else {
+        moviePlayerIframe.src = "";
+      }
     } catch (error) {
       results.innerHTML = `<p>Error al cargar detalles: ${error.message}</p>`;
     }
@@ -736,8 +743,8 @@
 
   // Función para abrir modal de selección de reproductor
   const playerChoiceModal = document.getElementById("playerChoiceModal");
-  const playerChoiceButtons = playerChoiceModal.querySelectorAll(".playerChoiceBtn");
-  const playerChoiceCancelBtn = document.getElementById("playerChoiceCancelBtn");
+  const playerChoiceContent = playerChoiceModal.querySelector("#playerChoiceContent");
+  let playerChoiceCancelBtn = playerChoiceModal.querySelector("#playerChoiceCancelBtn");
 
   function openPlayerChoiceModal() {
     if (!currentMovieId) {
@@ -747,34 +754,29 @@
     playerChoiceModal.style.display = "flex";
   }
 
-  playerChoiceCancelBtn.addEventListener("click", () => {
-    playerChoiceModal.style.display = "none";
-  });
-
-  playerChoiceButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      const player = button.getAttribute("data-player");
+  // Evento para botones en modal reproductores para películas
+  playerChoiceContent.addEventListener("click", (event) => {
+    if(event.target.classList.contains("playerChoiceBtn")){
+      const player = event.target.getAttribute("data-player");
       let url = "";
       switch(player) {
-        case "Videasy":
-          url = `https://player.videasy.net/movie/${currentMovieId}`;
-          break;
-        case "Vidfast":
-          url = `https://vidfast.pro/movie/${currentMovieId}`;
+        case "IVW":
+          url = `https://rivestream.org/watch?type=movie&id=${currentMovieId}`;
+          moviePlayerIframe.src = url; // Cambia dentro de iframe la fuente
           break;
         case "VidSrc":
           url = `https://vidsrc.xyz/embed/movie/${currentMovieId}`;
+          moviePlayerIframe.src = url; // Cambia dentro de iframe la fuente
           break;
-        case "VidLink":
-          url = `https://vidlink.pro/movie/${currentMovieId}`;
-          break;
-        case "VidPlus":
-          url = `https://player.vidplus.to/embed/movie/${currentMovieId}`;
-          break
       }
+      // No abrir ventana nueva, sólo cargar en iframe
       playerChoiceModal.style.display = "none";
-      if (url) window.open(url, "_blank");
-    });
+    }
+  });
+
+  // Evento cancelar modal
+  playerChoiceCancelBtn.addEventListener("click", () => {
+    playerChoiceModal.style.display = "none";
   });
 
   // Cerramos modal si hacemos clic fuera del contenido
@@ -994,9 +996,8 @@
     const content = playerChoiceModal.querySelector("#playerChoiceContent");
     content.innerHTML = `
       <h3 id="playerChoiceTitle">Selecciona el reproductor para la película</h3>
-      <button class="playerChoiceBtn" data-player="Videasy">Videasy</button>
-      <button class="playerChoiceBtn" data-player="Vidfast">Vidfast</button>
       <button class="playerChoiceBtn" data-player="VidSrc">VidSrc</button>
+      <button class="playerChoiceBtn" data-player="IVW">IVW</button>
       <button id="playerChoiceCancelBtn">Cancelar</button>
     `;
 
@@ -1007,24 +1008,16 @@
         const player = button.getAttribute("data-player");
         let url = "";
         switch(player) {
-          case "Videasy":
-          url = `https://player.videasy.net/movie/${currentMovieId}`;
-          break;
-        case "Vidfast":
-          url = `https://vidfast.pro/movie/${currentMovieId}`;
-          break;
-        case "VidSrc":
-          url = `https://vidsrc.xyz/embed/movie/${currentMovieId}`;
-          break;
-        case "VidLink":
-          url = `https://vidlink.pro/movie/${currentMovieId}`;
-          break;
-        case "VidPlus":
-          url = `https://player.vidplus.to/embed/movie/${currentMovieId}`;
-          break;
+          case "IVW":
+            url = `https://rivestream.org/watch?type=movie&id=${currentMovieId}`;
+            moviePlayerIframe.src = url; // cambia en iframe
+            break;
+          case "VidSrc":
+            url = `https://vidsrc.xyz/embed/movie/${currentMovieId}`;
+            moviePlayerIframe.src = url; // cambia en iframe
+            break;
         }
         playerChoiceModal.style.display = "none";
-        if (url) window.open(url, "_blank");
       });
     });
 
@@ -1056,6 +1049,7 @@
 </script>
 </body>
 </html>
+
 
 
 
