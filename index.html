@@ -195,22 +195,6 @@
     position: relative;
   }
 
-  /* Botón verde fullscreen añadido */
-  #fullscreenBtn {
-    background-color: #28a745; /* verde */
-    border: none;
-    color: white;
-    padding: 14px 20px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  #fullscreenBtn:hover {
-    background-color: #218838;
-  }
-
   /* Modal Styles */
   #playerChoiceModal {
     display: none;
@@ -520,13 +504,11 @@
         <div id="playerControls">
           <!-- Botón Cargar película -->
           <button class="action-btn" id="loadMovieBtn" onclick="openPlayerChoiceModal()">▶️ Cargar película</button>
-          <!-- Botón verde pantalla completa -->
-          <button id="fullscreenBtn" title="Pantalla completa">⛶ Fullscreen</button>
           <input type="hidden" id="tmdbInput" value="" />
         </div>
         <div id="playerEmbedWrapper">
-          <!-- iframe reproductor película -->
-          <iframe id="moviePlayerIframe" src="" width="100%" height="480" style="border:none; border-radius: 16px; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000;"></iframe>
+          <!-- iframe reproductor película con atributos para fullscreen -->
+          <iframe id="moviePlayerIframe" src="" width="100%" height="480" style="border:none; border-radius: 16px; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000;" allowfullscreen allow="encrypted-media"></iframe>
           <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
             <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
             <span>EXTENSIÓN PARA SUBTÍTULOS</span>
@@ -804,21 +786,6 @@
     }
   });
 
-  // ---------- Añadido botón fullscreen ----------
-
-  document.getElementById("fullscreenBtn").addEventListener("click", () => {
-    const iframe = document.getElementById("moviePlayerIframe");
-    if (iframe.requestFullscreen) {
-      iframe.requestFullscreen();
-    } else if (iframe.mozRequestFullScreen) { /* Firefox */
-      iframe.mozRequestFullScreen();
-    } else if (iframe.webkitRequestFullscreen) { /* Chrome, Safari */
-      iframe.webkitRequestFullscreen();
-    } else if (iframe.msRequestFullscreen) { /* IE/Edge */
-      iframe.msRequestFullscreen();
-    }
-  });
-
   // ---------- Subs Section ----------
 
   const subsResults = document.getElementById("subsResults");
@@ -1082,9 +1049,6 @@
 </script>
 </body>
 </html>
-
-
-
 
 
 
