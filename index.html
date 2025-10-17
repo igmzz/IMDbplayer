@@ -405,6 +405,7 @@
     justify-content: center;
     gap: 1rem;
     margin-top: 1rem;
+    margin-bottom: 3rem;
     position: relative;
   }
   #playerChoiceModal {
@@ -548,6 +549,17 @@
     object-fit: cover;
     border-bottom: 1px solid var(--border-color);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  #playerEmbedWrapper {
+    margin-bottom: 2rem;
+  }
+  #moviePlayerIframe {
+    width: 100%;
+    height: 720px;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
+    background: #000;
   }
   #footballEmbedWrapper {
     width: 100%;
@@ -794,6 +806,25 @@
   #seriesControls {
     display: none;
   }
+  #subsSearchContainer {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+  #subsPlayerEmbedWrapper {
+    margin-top: 20px;
+    width: 100%;
+    height: 480px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
+    background: #000;
+    border: var(--card-border);
+  }
   ::-webkit-scrollbar {
     width: 8px;
   }
@@ -856,7 +887,7 @@
           <input type="hidden" id="tmdbInput" value="" />
         </div>
         <div id="playerEmbedWrapper">
-          <iframe id="moviePlayerIframe" src="" width="100%" height="720" style="border:none; border-radius: 16px; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000;" allowfullscreen allow="encrypted-media"></iframe>
+          <iframe id="moviePlayerIframe" src="" allowfullscreen allow="encrypted-media"></iframe>
           <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
             <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
             <span>EXTENSIÓN PARA SUBTÍTULOS</span>
@@ -872,13 +903,13 @@
 
     <!-- Subs Section -->
     <div id="subsSection" style="display:none;">
-      <div id="subsSearchContainer" style="display:flex; justify-content:center; gap:15px; margin-bottom:25px;">
+      <div id="subsSearchContainer">
         <input type="text" id="subsTitleInput" placeholder="Buscar película para subs..." />
         <button class="action-btn" id="subsSearchBtn">Buscar</button>
       </div>
-      <div id="subsResults" style="display:flex; flex-wrap: wrap; justify-content:center; gap:30px 40px;"></div>
+      <div id="subsResults"></div>
       <div id="subsInfoBox"></div>
-      <div id="subsPlayerEmbedWrapper" style="margin-top: 20px; width: 100%; height: 480px; max-width: 800px; margin-left: auto; margin-right: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7); background: #000; border: var(--card-border);"></div>
+      <div id="subsPlayerEmbedWrapper"></div>
     </div>
 
     <!-- Series Section -->
@@ -1261,7 +1292,6 @@
 </script>
 </body>
 </html>
-
 
 
 
