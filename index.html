@@ -798,13 +798,27 @@
     opacity: 0.7;
   }
   #seriesSearchContainer {
-    display: none;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
   }
   #seriesResults {
-    display: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem 2.5rem;
+    padding: 0;
   }
-  #seriesControls {
-    display: none;
+  #seriesPlayerControls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+    position: relative;
   }
   #subsSearchContainer {
     display: flex;
@@ -851,6 +865,130 @@
   }
   .card, .subs-card, .similar-card {
     animation: floatIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2rem 0;
+  }
+  .pagination button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 0.5rem;
+  }
+  .pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .pagination button:hover:not(:disabled) {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+  }
+  #seriesSynopsisBox {
+    max-width: 900px;
+    margin: 2rem auto 3rem auto;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    padding: 1.5rem;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: var(--card-border);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-light);
+  }
+  [data-theme="light"] #seriesSynopsisBox {
+    background: rgba(255,255,255,0.95);
+  }
+  #seriesPlayerIframe {
+    width: 100%;
+    height: 720px;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(44, 156, 255, 0.7);
+    background: #000;
+  }
+  #seriesPlayerChoiceModal {
+    display: none;
+    position: fixed;
+    z-index: 20000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+  }
+  #seriesPlayerChoiceContent {
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 2.5rem;
+    width: 400px;
+    box-shadow: var(--shadow-hover);
+    text-align: center;
+    color: var(--text-secondary);
+    border: var(--card-border);
+    backdrop-filter: blur(20px);
+  }
+  [data-theme="light"] #seriesPlayerChoiceContent {
+    background: rgba(255,255,255,0.95);
+  }
+  #seriesPlayerChoiceContent h3 {
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  [data-theme="light"] #seriesPlayerChoiceContent h3 {
+    background: none;
+    color: var(--accent-secondary);
+  }
+  #seriesPlayerChoiceCancelBtn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+  #seriesPlayerChoiceCancelBtn:hover {
+    color: var(--accent-primary);
+  }
+  select {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    outline: none;
+    background: var(--input-bg, var(--bg-card));
+    color: var(--text-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    font-weight: 500;
+  }
+  [data-theme="light"] select {
+    border: var(--card-border);
+    box-shadow: var(--shadow-light);
+  }
+  select:focus {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 3px rgba(45,55,72,0.1);
   }
 </style>
 </head>
@@ -913,15 +1051,28 @@
     </div>
 
     <!-- Series Section -->
-    <div id="seriesSection">
-      <div class="coming-soon-card">
-        <div class="coming-soon-content">
-          <i class="fas fa-tv-retro coming-soon-icon"></i>
-          <h3>SERIES</h3>
-          <p>¡Próximamente disponible!</p>
-          <p>Estamos trabajando en la mejor experiencia para ver tus series favoritas con la misma calidad y facilidad que nuestras películas.</p>
-          <p><strong>¡Mantente atento a las actualizaciones!</strong></p>
+    <div id="seriesSection" style="display:none;">
+      <div id="seriesSearchContainer">
+        <input type="text" id="seriesTitleInput" placeholder="Escribe el título de la serie..." />
+        <button class="action-btn" id="seriesSearchBtn">Buscar</button>
+      </div>
+      <div id="seriesResults"></div>
+      <div id="seriesPagination" class="pagination"></div>
+      <div id="seriesPlayerWrapper">
+        <div id="seriesPlayerControls">
+          <select id="seasonSelect" aria-label="Seleccionar temporada"></select>
+          <select id="episodeSelect" aria-label="Seleccionar episodio"></select>
+          <button class="action-btn" onclick="openSeriesPlayerChoiceModal()">▶️ Cargar episodio</button>
+          <input type="hidden" id="seriesTmdbInput" value="" />
         </div>
+        <div id="seriesPlayerEmbedWrapper">
+          <iframe id="seriesPlayerIframe" src="" allowfullscreen allow="encrypted-media"></iframe>
+          <a href="https://chromewebstore.google.com/detail/kkkbiiikppgjdiebcabomlbidfodipjg?utm_source=item-share-cb" target="_blank" id="subtitleExtensionBtn" title="Extensión para subtítulos" aria-label="Extensión para subtítulos">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="white" height="24" viewBox="0 0 24 24" width="24"><path d="M3 7v10h18V7H3zm16 8H5v-6h14v6zm-3-4h-2v3h-2v-3H8v-2h2V8h2v3h2v2z"/></svg>
+            <span>EXTENSIÓN PARA SUBTÍTULOS</span>
+          </a>
+        </div>
+        <div id="seriesSynopsisBox"></div>
       </div>
     </div>
 
@@ -940,13 +1091,23 @@
     </div>
   </div>
 
-  <!-- Modal para selección de reproductor -->
+  <!-- Modal para selección de reproductor películas -->
   <div id="playerChoiceModal" role="dialog" aria-modal="true" aria-labelledby="playerChoiceTitle">
     <div id="playerChoiceContent">
       <h3 id="playerChoiceTitle">Selecciona el reproductor para la película</h3>
       <button class="playerChoiceBtn" data-player="VidSrc">VidSrc</button>
       <button class="playerChoiceBtn" data-player="Rive">Rive</button>
       <button id="playerChoiceCancelBtn">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal para selección de reproductor series -->
+  <div id="seriesPlayerChoiceModal" role="dialog" aria-modal="true" aria-labelledby="seriesPlayerChoiceTitle">
+    <div id="seriesPlayerChoiceContent">
+      <h3 id="seriesPlayerChoiceTitle">Selecciona el reproductor para la serie</h3>
+      <button class="playerChoiceBtn" data-player="VidSrc">VidSrc</button>
+      <button class="playerChoiceBtn" data-player="Rive">Rive</button>
+      <button id="seriesPlayerChoiceCancelBtn">Cancelar</button>
     </div>
   </div>
 
@@ -981,8 +1142,11 @@
   const tmdbApiKey = "b60c8fb1893bba0f1380297e7a40257e";
   const tmdbBaseURL = "https://api.themoviedb.org/3";
   let currentMovieId = "";
-  let currentPage = 1;
-  let totalPages = 1;
+  let currentMoviePage = 1;
+  let movieTotalPages = 1;
+  let currentSeriesId = "";
+  let currentSeriesPage = 1;
+  let seriesTotalPages = 1;
 
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD")
@@ -1019,7 +1183,7 @@
       hideLoading();
       return;
     }
-    await searchMovie(currentPage);
+    await searchMovie(currentMoviePage);
     hideLoading();
   }
 
@@ -1044,7 +1208,7 @@
         return;
       }
       results.innerHTML = "";
-      totalPages = data.total_pages;
+      movieTotalPages = data.total_pages;
       updatePagination(moviesPagination, "movies");
       data.results.forEach((movie) => {
         const card = document.createElement("div");
@@ -1064,15 +1228,20 @@
 
   function updatePagination(container, type) {
     container.innerHTML = "";
-    if (totalPages <= 1) return;
+    if ((type === "movies" ? movieTotalPages : seriesTotalPages) <= 1) return;
     
     const prevBtn = document.createElement("button");
     prevBtn.textContent = "« Anterior";
-    prevBtn.disabled = currentPage <= 1;
+    prevBtn.disabled = (type === "movies" ? currentMoviePage : currentSeriesPage) <= 1;
     prevBtn.onclick = () => {
-      if (currentPage > 1) {
-        currentPage--;
-        if(type === "movies") searchMovie(currentPage);
+      if ((type === "movies" ? currentMoviePage : currentSeriesPage) > 1) {
+        if (type === "movies") {
+          currentMoviePage--;
+          searchMovie(currentMoviePage);
+        } else {
+          currentSeriesPage--;
+          searchSeries(currentSeriesPage);
+        }
       }
     };
     container.appendChild(prevBtn);
@@ -1080,16 +1249,21 @@
     const pageInfo = document.createElement("span");
     pageInfo.style.color = "var(--text-secondary)";
     pageInfo.style.margin = "0 1rem";
-    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+    pageInfo.textContent = `Página ${(type === "movies" ? currentMoviePage : currentSeriesPage)} de ${(type === "movies" ? movieTotalPages : seriesTotalPages)}`;
     container.appendChild(pageInfo);
 
     const nextBtn = document.createElement("button");
     nextBtn.textContent = "Siguiente »";
-    nextBtn.disabled = currentPage >= totalPages;
+    nextBtn.disabled = (type === "movies" ? currentMoviePage : currentSeriesPage) >= (type === "movies" ? movieTotalPages : seriesTotalPages);
     nextBtn.onclick = () => {
-      if (currentPage < totalPages) {
-        currentPage++;
-        if(type === "movies") searchMovie(currentPage);
+      if ((type === "movies" ? currentMoviePage : currentSeriesPage) < (type === "movies" ? movieTotalPages : seriesTotalPages)) {
+        if (type === "movies") {
+          currentMoviePage++;
+          searchMovie(currentMoviePage);
+        } else {
+          currentSeriesPage++;
+          searchSeries(currentSeriesPage);
+        }
       }
     };
     container.appendChild(nextBtn);
@@ -1180,6 +1354,201 @@
   window.addEventListener("click", (event) => {
     if (event.target === playerChoiceModal) {
       playerChoiceModal.style.display = "none";
+    }
+  });
+
+  // ---------- Series -----------
+
+  const seriesResults = document.getElementById("seriesResults");
+  const seriesTmdbInput = document.getElementById("seriesTmdbInput");
+  const seriesPagination = document.getElementById("seriesPagination");
+  const seriesSynopsisBox = document.getElementById("seriesSynopsisBox");
+  const seriesPlayerIframe = document.getElementById("seriesPlayerIframe");
+  const seasonSelect = document.getElementById("seasonSelect");
+  const episodeSelect = document.getElementById("episodeSelect");
+
+  async function startSeriesSearch() {
+    showLoading();
+    seriesResults.innerHTML = "";
+    seriesPagination.innerHTML = "";
+    seriesSynopsisBox.innerHTML = "";
+    currentSeriesId = "";
+    seasonSelect.innerHTML = "";
+    episodeSelect.innerHTML = "";
+    const currentTitle = document.getElementById("seriesTitleInput").value.trim();
+    if (!currentTitle) {
+      hideLoading();
+      return;
+    }
+    await searchSeries(currentSeriesPage);
+    hideLoading();
+  }
+
+  document.getElementById("seriesSearchBtn").addEventListener("click", startSeriesSearch);
+  document.getElementById("seriesTitleInput").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      startSeriesSearch();
+    }
+  });
+
+  async function searchSeries(page) {
+    try {
+      const currentTitle = document.getElementById("seriesTitleInput").value.trim();
+      const url = `${tmdbBaseURL}/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await response.json();
+      if (!data.results || data.results.length === 0) {
+        seriesResults.innerHTML = "<p>No se encontraron resultados.</p>";
+        seriesPagination.innerHTML = "";
+        return;
+      }
+      seriesResults.innerHTML = "";
+      seriesTotalPages = data.total_pages;
+      updatePagination(seriesPagination, "series");
+      data.results.forEach((series) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        const poster = series.poster_path ? `https://image.tmdb.org/t/p/w200${series.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${series.name} (${series.first_air_date ? series.first_air_date.slice(0,4) : "---"})</div>`;
+        card.onclick = async () => {
+          await loadSeriesDetails(series.id);
+        };
+        seriesResults.appendChild(card);
+      });
+    } catch (error) {
+      seriesResults.innerHTML = `<p>Error al buscar series: ${error.message}</p>`;
+      seriesPagination.innerHTML = "";
+    }
+  }
+
+  async function loadSeriesDetails(seriesId) {
+    seriesResults.innerHTML = "";
+    seriesPagination.innerHTML = "";
+    seriesSynopsisBox.innerHTML = "";
+    currentSeriesId = "";
+    seasonSelect.innerHTML = "";
+    episodeSelect.innerHTML = "";
+    try {
+      const detailsUrl = `${tmdbBaseURL}/tv/${seriesId}?api_key=${tmdbApiKey}&language=es-ES&append_to_response=credits,external_ids`;
+      const detailsRes = await fetch(detailsUrl);
+      if (!detailsRes.ok) {
+        seriesResults.innerHTML = "<p>Error al cargar detalles de la serie.</p>";
+        return;
+      }
+      const details = await detailsRes.json();
+      const posterLarge = details.poster_path ? `https://image.tmdb.org/t/p/w300${details.poster_path}` : "https://via.placeholder.com/150x225?text=No+Image";
+      const creator = details.created_by.map(c => c.name).join(", ") || "N/D";
+      const castTop5 = details.credits.cast.slice(0,5);
+      const castNames = castTop5.map(c => c.name).join(", ");
+      const expanded = document.createElement("div");
+      expanded.className = "expanded-card";
+      expanded.innerHTML = `
+        <img src="${posterLarge}">
+        <div class="expanded-info">
+          <h3>${details.name} (${details.first_air_date ? details.first_air_date.slice(0,4) : "---"})</h3>
+          <p><strong>Creador:</strong> ${creator}</p>
+          <p><strong>Reparto:</strong> ${castNames}</p>
+          <p><strong>IMDb:</strong> <span style="color:var(--accent-primary)">${details.vote_average}</span></p>
+          <p><strong>Género:</strong> ${details.genres.map(g => g.name).join(", ")}</p>
+          <p><strong>Temporadas:</strong> ${details.number_of_seasons || "N/D"}</p>
+          <p><strong>País:</strong> ${details.production_countries.map(c => c.name).join(", ")}</p>
+        </div>`;
+      seriesResults.appendChild(expanded);
+
+      seriesTmdbInput.value = details.id || "";
+      seriesTmdbInput.setAttribute("data-title", slugify(details.name));
+      seriesSynopsisBox.innerHTML = `<span class="movie-synopsis-label">Sinopsis:</span> ${details.overview || "Sinopsis no disponible."}`;
+
+      currentSeriesId = details.id;
+
+      populateSeasons(details.number_of_seasons);
+
+      // Load default season 1 episode 1 with Rive
+      if(currentSeriesId){
+        seriesPlayerIframe.src = `https://rivestream.org/watch?type=tv&id=${currentSeriesId}&season=1&episode=1`;
+      } else {
+        seriesPlayerIframe.src = "";
+      }
+    } catch (error) {
+      seriesResults.innerHTML = `<p>Error al cargar detalles: ${error.message}</p>`;
+    }
+  }
+
+  function populateSeasons(numSeasons) {
+    seasonSelect.innerHTML = '';
+    for (let i = 1; i <= numSeasons; i++) {
+      const option = document.createElement('option');
+      option.value = i;
+      option.textContent = `Temporada ${i}`;
+      seasonSelect.appendChild(option);
+    }
+    loadEpisodes(1);
+  }
+
+  seasonSelect.addEventListener('change', (e) => {
+    loadEpisodes(e.target.value);
+  });
+
+  async function loadEpisodes(season) {
+    episodeSelect.innerHTML = '';
+    try {
+      const url = `${tmdbBaseURL}/tv/${currentSeriesId}/season/${season}?api_key=${tmdbApiKey}&language=es-ES`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Error fetching season details');
+      const data = await res.json();
+      const numEpisodes = data.episodes.length;
+      for (let i = 1; i <= numEpisodes; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `Episodio ${i}`;
+        episodeSelect.appendChild(option);
+      }
+    } catch (error) {
+      console.error('Error loading episodes:', error);
+    }
+  }
+
+  const seriesPlayerChoiceModal = document.getElementById("seriesPlayerChoiceModal");
+  const seriesPlayerChoiceContent = seriesPlayerChoiceModal.querySelector("#seriesPlayerChoiceContent");
+  let seriesPlayerChoiceCancelBtn = seriesPlayerChoiceModal.querySelector("#seriesPlayerChoiceCancelBtn");
+
+  function openSeriesPlayerChoiceModal() {
+    if (!currentSeriesId) {
+      alert("Por favor, selecciona primero una serie haciendo clic en alguna tarjeta.");
+      return;
+    }
+    seriesPlayerChoiceModal.style.display = "flex";
+  }
+
+  seriesPlayerChoiceContent.addEventListener("click", (event) => {
+    if(event.target.classList.contains("playerChoiceBtn")){
+      const player = event.target.getAttribute("data-player");
+      const season = seasonSelect.value;
+      const episode = episodeSelect.value;
+      let url = "";
+      switch(player) {
+        case "Rive":
+          url = `https://rivestream.org/watch?type=tv&id=${currentSeriesId}&season=${season}&episode=${episode}`;
+          seriesPlayerIframe.src = url;
+          break;
+        case "VidSrc":
+          url = `https://vidsrc.xyz/embed/tv/${currentSeriesId}-${season}-${episode}`;
+          seriesPlayerIframe.src = url;
+          break;
+      }
+      seriesPlayerChoiceModal.style.display = "none";
+    }
+  });
+
+  seriesPlayerChoiceCancelBtn.addEventListener("click", () => {
+    seriesPlayerChoiceModal.style.display = "none";
+  });
+
+  window.addEventListener("click", (event) => {
+    if (event.target === seriesPlayerChoiceModal) {
+      seriesPlayerChoiceModal.style.display = "none";
     }
   });
 
