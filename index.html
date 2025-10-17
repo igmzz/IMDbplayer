@@ -1014,6 +1014,11 @@
     <!-- Películas Section -->
     <div id="moviesSection" style="display:block;">
       <div id="searchContainer">
+        <select id="searchType">
+          <option value="title">Por Título</option>
+          <option value="actor">Por Actor</option>
+          <option value="director">Por Director</option>
+        </select>
         <input type="text" id="titleInput" placeholder="Escribe el título..." />
         <button class="action-btn" id="searchBtn">Buscar</button>
       </div>
@@ -1147,6 +1152,7 @@
   let currentSeriesId = "";
   let currentSeriesPage = 1;
   let seriesTotalPages = 1;
+  let currentSearchMode = "title";
 
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD")
@@ -1178,12 +1184,21 @@
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
     currentMovieId = "";
+    currentMoviePage = 1;
     const currentTitle = document.getElementById("titleInput").value.trim();
     if (!currentTitle) {
       hideLoading();
       return;
     }
-    await searchMovie(currentMoviePage);
+    const searchType = document.getElementById("searchType").value;
+    currentSearchMode = searchType;
+    if (currentSearchMode === "title") {
+      await searchMovie(currentMoviePage);
+    } else if (currentSearchMode === "actor") {
+      await searchActor(currentMoviePage);
+    } else if (currentSearchMode === "director") {
+      await searchDirector(currentMoviePage);
+    }
     hideLoading();
   }
 
@@ -1192,6 +1207,17 @@
     if (event.key === "Enter") {
       event.preventDefault();
       startSearch();
+    }
+  });
+
+  document.getElementById("searchType").addEventListener("change", (e) => {
+    const input = document.getElementById("titleInput");
+    if (e.target.value === "actor") {
+      input.placeholder = "Escribe el nombre del actor...";
+    } else if (e.target.value === "director") {
+      input.placeholder = "Escribe el nombre del director...";
+    } else {
+      input.placeholder = "Escribe el título...";
     }
   });
 
@@ -1226,6 +1252,130 @@
     }
   }
 
+  async function searchActor(page) {
+    try {
+      const currentTitle = document.getElementById("titleInput").value.trim();
+      const url = `${tmdbBaseURL}/search/person?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await response.json();
+      if (!data.results || data.results.length === 0) {
+        results.innerHTML = "<p>No se encontraron resultados.</p>";
+        moviesPagination.innerHTML = "";
+        return;
+      }
+      results.innerHTML = "";
+      movieTotalPages = data.total_pages;
+      updatePagination(moviesPagination, "movies");
+      data.results.forEach((person) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        const profile = person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${profile}"><div class="title">${person.name}</div>`;
+        card.onclick = () => loadActorMovies(person.id, person.name);
+        results.appendChild(card);
+      });
+    } catch (error) {
+      results.innerHTML = `<p>Error al buscar actores: ${error.message}</p>`;
+      moviesPagination.innerHTML = "";
+    }
+  }
+
+  async function searchDirector(page) {
+    try {
+      const currentTitle = document.getElementById("titleInput").value.trim();
+      const url = `${tmdbBaseURL}/search/person?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await response.json();
+      if (!data.results || data.results.length === 0) {
+        results.innerHTML = "<p>No se encontraron resultados.</p>";
+        moviesPagination.innerHTML = "";
+        return;
+      }
+      results.innerHTML = "";
+      movieTotalPages = data.total_pages;
+      updatePagination(moviesPagination, "movies");
+      data.results.forEach((person) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        const profile = person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${profile}"><div class="title">${person.name}</div>`;
+        card.onclick = () => loadDirectorMovies(person.id, person.name);
+        results.appendChild(card);
+      });
+    } catch (error) {
+      results.innerHTML = `<p>Error al buscar directores: ${error.message}</p>`;
+      moviesPagination.innerHTML = "";
+    }
+  }
+
+  async function loadActorMovies(actorId, actorName) {
+    results.innerHTML = "";
+    moviesPagination.innerHTML = "";
+    movieSynopsisBox.innerHTML = "";
+    currentMovieId = "";
+    const header = document.createElement("h3");
+    header.textContent = `Películas de ${actorName}`;
+    header.style.textAlign = "center";
+    header.style.marginBottom = "1rem";
+    results.appendChild(header);
+    try {
+      const url = `${tmdbBaseURL}/person/${actorId}/movie_credits?api_key=${tmdbApiKey}&language=es-ES`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await res.json();
+      const movies = data.cast.sort((a, b) => b.popularity - a.popularity);
+      movies.forEach((movie) => {
+        if (movie.title && movie.release_date) {
+          const card = document.createElement("div");
+          card.className = "card";
+          const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+          card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : "---"})</div>`;
+          card.onclick = async () => {
+            await loadMovieDetails(movie.id);
+          };
+          results.appendChild(card);
+        }
+      });
+    } catch (error) {
+      results.innerHTML = `<p>Error al cargar películas del actor: ${error.message}</p>`;
+    }
+  }
+
+  async function loadDirectorMovies(directorId, directorName) {
+    results.innerHTML = "";
+    moviesPagination.innerHTML = "";
+    movieSynopsisBox.innerHTML = "";
+    currentMovieId = "";
+    const header = document.createElement("h3");
+    header.textContent = `Películas de ${directorName}`;
+    header.style.textAlign = "center";
+    header.style.marginBottom = "1rem";
+    results.appendChild(header);
+    try {
+      const url = `${tmdbBaseURL}/person/${directorId}/movie_credits?api_key=${tmdbApiKey}&language=es-ES`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await res.json();
+      const movies = data.crew.filter(credit => credit.job === "Director").sort((a, b) => b.popularity - a.popularity);
+      movies.forEach((movie) => {
+        if (movie.title && movie.release_date) {
+          const card = document.createElement("div");
+          card.className = "card";
+          const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+          card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : "---"})</div>`;
+          card.onclick = async () => {
+            await loadMovieDetails(movie.id);
+          };
+          results.appendChild(card);
+        }
+      });
+    } catch (error) {
+      results.innerHTML = `<p>Error al cargar películas del director: ${error.message}</p>`;
+    }
+  }
+
   function updatePagination(container, type) {
     container.innerHTML = "";
     if ((type === "movies" ? movieTotalPages : seriesTotalPages) <= 1) return;
@@ -1237,7 +1387,13 @@
       if ((type === "movies" ? currentMoviePage : currentSeriesPage) > 1) {
         if (type === "movies") {
           currentMoviePage--;
-          searchMovie(currentMoviePage);
+          if (currentSearchMode === "title") {
+            searchMovie(currentMoviePage);
+          } else if (currentSearchMode === "actor") {
+            searchActor(currentMoviePage);
+          } else if (currentSearchMode === "director") {
+            searchDirector(currentMoviePage);
+          }
         } else {
           currentSeriesPage--;
           searchSeries(currentSeriesPage);
@@ -1259,7 +1415,13 @@
       if ((type === "movies" ? currentMoviePage : currentSeriesPage) < (type === "movies" ? movieTotalPages : seriesTotalPages)) {
         if (type === "movies") {
           currentMoviePage++;
-          searchMovie(currentMoviePage);
+          if (currentSearchMode === "title") {
+            searchMovie(currentMoviePage);
+          } else if (currentSearchMode === "actor") {
+            searchActor(currentMoviePage);
+          } else if (currentSearchMode === "director") {
+            searchDirector(currentMoviePage);
+          }
         } else {
           currentSeriesPage++;
           searchSeries(currentSeriesPage);
@@ -1375,6 +1537,7 @@
     currentSeriesId = "";
     seasonSelect.innerHTML = "";
     episodeSelect.innerHTML = "";
+    currentSeriesPage = 1;
     const currentTitle = document.getElementById("seriesTitleInput").value.trim();
     if (!currentTitle) {
       hideLoading();
