@@ -1058,6 +1058,11 @@
     <!-- Series Section -->
     <div id="seriesSection" style="display:none;">
       <div id="seriesSearchContainer">
+        <select id="seriesSearchType">
+          <option value="title">Por Título</option>
+          <option value="actor">Por Actor</option>
+          <option value="director">Por Director</option>
+        </select>
         <input type="text" id="seriesTitleInput" placeholder="Escribe el título de la serie..." />
         <button class="action-btn" id="seriesSearchBtn">Buscar</button>
       </div>
@@ -1153,6 +1158,7 @@
   let currentSeriesPage = 1;
   let seriesTotalPages = 1;
   let currentSearchMode = "title";
+  let currentSeriesSearchMode = "title";
 
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD")
@@ -1396,7 +1402,13 @@
           }
         } else {
           currentSeriesPage--;
-          searchSeries(currentSeriesPage);
+          if (currentSeriesSearchMode === "title") {
+            searchSeries(currentSeriesPage);
+          } else if (currentSeriesSearchMode === "actor") {
+            searchSeriesActor(currentSeriesPage);
+          } else if (currentSeriesSearchMode === "director") {
+            searchSeriesDirector(currentSeriesPage);
+          }
         }
       }
     };
@@ -1424,7 +1436,13 @@
           }
         } else {
           currentSeriesPage++;
-          searchSeries(currentSeriesPage);
+          if (currentSeriesSearchMode === "title") {
+            searchSeries(currentSeriesPage);
+          } else if (currentSeriesSearchMode === "actor") {
+            searchSeriesActor(currentSeriesPage);
+          } else if (currentSeriesSearchMode === "director") {
+            searchSeriesDirector(currentSeriesPage);
+          }
         }
       }
     };
@@ -1543,7 +1561,15 @@
       hideLoading();
       return;
     }
-    await searchSeries(currentSeriesPage);
+    const searchType = document.getElementById("seriesSearchType").value;
+    currentSeriesSearchMode = searchType;
+    if (currentSeriesSearchMode === "title") {
+      await searchSeries(currentSeriesPage);
+    } else if (currentSeriesSearchMode === "actor") {
+      await searchSeriesActor(currentSeriesPage);
+    } else if (currentSeriesSearchMode === "director") {
+      await searchSeriesDirector(currentSeriesPage);
+    }
     hideLoading();
   }
 
@@ -1552,6 +1578,17 @@
     if (event.key === "Enter") {
       event.preventDefault();
       startSeriesSearch();
+    }
+  });
+
+  document.getElementById("seriesSearchType").addEventListener("change", (e) => {
+    const input = document.getElementById("seriesTitleInput");
+    if (e.target.value === "actor") {
+      input.placeholder = "Escribe el nombre del actor...";
+    } else if (e.target.value === "director") {
+      input.placeholder = "Escribe el nombre del director...";
+    } else {
+      input.placeholder = "Escribe el título de la serie...";
     }
   });
 
@@ -1583,6 +1620,130 @@
     } catch (error) {
       seriesResults.innerHTML = `<p>Error al buscar series: ${error.message}</p>`;
       seriesPagination.innerHTML = "";
+    }
+  }
+
+  async function searchSeriesActor(page) {
+    try {
+      const currentTitle = document.getElementById("seriesTitleInput").value.trim();
+      const url = `${tmdbBaseURL}/search/person?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await response.json();
+      if (!data.results || data.results.length === 0) {
+        seriesResults.innerHTML = "<p>No se encontraron resultados.</p>";
+        seriesPagination.innerHTML = "";
+        return;
+      }
+      seriesResults.innerHTML = "";
+      seriesTotalPages = data.total_pages;
+      updatePagination(seriesPagination, "series");
+      data.results.forEach((person) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        const profile = person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${profile}"><div class="title">${person.name}</div>`;
+        card.onclick = () => loadActorSeries(person.id, person.name);
+        seriesResults.appendChild(card);
+      });
+    } catch (error) {
+      seriesResults.innerHTML = `<p>Error al buscar actores: ${error.message}</p>`;
+      seriesPagination.innerHTML = "";
+    }
+  }
+
+  async function searchSeriesDirector(page) {
+    try {
+      const currentTitle = document.getElementById("seriesTitleInput").value.trim();
+      const url = `${tmdbBaseURL}/search/person?api_key=${tmdbApiKey}&query=${encodeURIComponent(currentTitle)}&page=${page}&language=es-ES`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await response.json();
+      if (!data.results || data.results.length === 0) {
+        seriesResults.innerHTML = "<p>No se encontraron resultados.</p>";
+        seriesPagination.innerHTML = "";
+        return;
+      }
+      seriesResults.innerHTML = "";
+      seriesTotalPages = data.total_pages;
+      updatePagination(seriesPagination, "series");
+      data.results.forEach((person) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        const profile = person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+        card.innerHTML = `<img class="poster" src="${profile}"><div class="title">${person.name}</div>`;
+        card.onclick = () => loadDirectorSeries(person.id, person.name);
+        seriesResults.appendChild(card);
+      });
+    } catch (error) {
+      seriesResults.innerHTML = `<p>Error al buscar directores: ${error.message}</p>`;
+      seriesPagination.innerHTML = "";
+    }
+  }
+
+  async function loadActorSeries(actorId, actorName) {
+    seriesResults.innerHTML = "";
+    seriesPagination.innerHTML = "";
+    seriesSynopsisBox.innerHTML = "";
+    currentSeriesId = "";
+    const header = document.createElement("h3");
+    header.textContent = `Series de ${actorName}`;
+    header.style.textAlign = "center";
+    header.style.marginBottom = "1rem";
+    seriesResults.appendChild(header);
+    try {
+      const url = `${tmdbBaseURL}/person/${actorId}/tv_credits?api_key=${tmdbApiKey}&language=es-ES`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await res.json();
+      const seriesList = data.cast.sort((a, b) => b.popularity - a.popularity);
+      seriesList.forEach((series) => {
+        if (series.name && series.first_air_date) {
+          const card = document.createElement("div");
+          card.className = "card";
+          const poster = series.poster_path ? `https://image.tmdb.org/t/p/w200${series.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+          card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${series.name} (${series.first_air_date ? series.first_air_date.slice(0,4) : "---"})</div>`;
+          card.onclick = async () => {
+            await loadSeriesDetails(series.id);
+          };
+          seriesResults.appendChild(card);
+        }
+      });
+    } catch (error) {
+      seriesResults.innerHTML = `<p>Error al cargar series del actor: ${error.message}</p>`;
+    }
+  }
+
+  async function loadDirectorSeries(directorId, directorName) {
+    seriesResults.innerHTML = "";
+    seriesPagination.innerHTML = "";
+    seriesSynopsisBox.innerHTML = "";
+    currentSeriesId = "";
+    const header = document.createElement("h3");
+    header.textContent = `Series de ${directorName}`;
+    header.style.textAlign = "center";
+    header.style.marginBottom = "1rem";
+    seriesResults.appendChild(header);
+    try {
+      const url = `${tmdbBaseURL}/person/${directorId}/tv_credits?api_key=${tmdbApiKey}&language=es-ES`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Error en la respuesta de TMDB");
+      const data = await res.json();
+      const seriesList = data.crew.filter(credit => credit.job === "Director").sort((a, b) => b.popularity - a.popularity);
+      seriesList.forEach((series) => {
+        if (series.name && series.first_air_date) {
+          const card = document.createElement("div");
+          card.className = "card";
+          const poster = series.poster_path ? `https://image.tmdb.org/t/p/w200${series.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
+          card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${series.name} (${series.first_air_date ? series.first_air_date.slice(0,4) : "---"})</div>`;
+          card.onclick = async () => {
+            await loadSeriesDetails(series.id);
+          };
+          seriesResults.appendChild(card);
+        }
+      });
+    } catch (error) {
+      seriesResults.innerHTML = `<p>Error al cargar series del director: ${error.message}</p>`;
     }
   }
 
@@ -1824,6 +1985,7 @@
 </script>
 </body>
 </html>
+
 
 
 
