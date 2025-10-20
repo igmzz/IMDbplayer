@@ -1159,6 +1159,12 @@
   let seriesTotalPages = 1;
   let currentSearchMode = "title";
   let currentSeriesSearchMode = "title";
+  let currentList = [];
+  let currentListType = '';
+  let currentPersonName = '';
+  let currentListPage = 1;
+  let currentListTotalPages = 1;
+  let itemsPerPage = 20;
 
   function slugify(text) {
     return text.toString().toLowerCase().normalize("NFD")
@@ -1191,6 +1197,11 @@
     movieSynopsisBox.innerHTML = "";
     currentMovieId = "";
     currentMoviePage = 1;
+    currentList = [];
+    currentListType = '';
+    currentPersonName = '';
+    currentListPage = 1;
+    currentListTotalPages = 1;
     const currentTitle = document.getElementById("titleInput").value.trim();
     if (!currentTitle) {
       hideLoading();
@@ -1241,6 +1252,7 @@
       }
       results.innerHTML = "";
       movieTotalPages = data.total_pages;
+      currentList = [];
       updatePagination(moviesPagination, "movies");
       data.results.forEach((movie) => {
         const card = document.createElement("div");
@@ -1272,6 +1284,7 @@
       }
       results.innerHTML = "";
       movieTotalPages = data.total_pages;
+      currentList = [];
       updatePagination(moviesPagination, "movies");
       data.results.forEach((person) => {
         const card = document.createElement("div");
@@ -1301,6 +1314,7 @@
       }
       results.innerHTML = "";
       movieTotalPages = data.total_pages;
+      currentList = [];
       updatePagination(moviesPagination, "movies");
       data.results.forEach((person) => {
         const card = document.createElement("div");
@@ -1321,29 +1335,19 @@
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
     currentMovieId = "";
-    const header = document.createElement("h3");
-    header.textContent = `Películas de ${actorName}`;
-    header.style.textAlign = "center";
-    header.style.marginBottom = "1rem";
-    results.appendChild(header);
+    currentPersonName = actorName;
+    currentListType = 'actorMovies';
     try {
       const url = `${tmdbBaseURL}/person/${actorId}/movie_credits?api_key=${tmdbApiKey}&language=es-ES`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Error en la respuesta de TMDB");
       const data = await res.json();
-      const movies = data.cast.sort((a, b) => b.popularity - a.popularity);
-      movies.forEach((movie) => {
-        if (movie.title && movie.release_date) {
-          const card = document.createElement("div");
-          card.className = "card";
-          const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
-          card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : "---"})</div>`;
-          card.onclick = async () => {
-            await loadMovieDetails(movie.id);
-          };
-          results.appendChild(card);
-        }
-      });
+      const movies = data.cast.sort((a, b) => b.popularity - a.popularity).filter(movie => movie.title && movie.release_date);
+      currentList = movies;
+      currentListTotalPages = Math.ceil(currentList.length / itemsPerPage);
+      currentListPage = 1;
+      displayListPage();
+      updatePagination(moviesPagination, "movies");
     } catch (error) {
       results.innerHTML = `<p>Error al cargar películas del actor: ${error.message}</p>`;
     }
@@ -1354,29 +1358,19 @@
     moviesPagination.innerHTML = "";
     movieSynopsisBox.innerHTML = "";
     currentMovieId = "";
-    const header = document.createElement("h3");
-    header.textContent = `Películas de ${directorName}`;
-    header.style.textAlign = "center";
-    header.style.marginBottom = "1rem";
-    results.appendChild(header);
+    currentPersonName = directorName;
+    currentListType = 'directorMovies';
     try {
       const url = `${tmdbBaseURL}/person/${directorId}/movie_credits?api_key=${tmdbApiKey}&language=es-ES`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Error en la respuesta de TMDB");
       const data = await res.json();
-      const movies = data.crew.filter(credit => credit.job === "Director").sort((a, b) => b.popularity - a.popularity);
-      movies.forEach((movie) => {
-        if (movie.title && movie.release_date) {
-          const card = document.createElement("div");
-          card.className = "card";
-          const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
-          card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : "---"})</div>`;
-          card.onclick = async () => {
-            await loadMovieDetails(movie.id);
-          };
-          results.appendChild(card);
-        }
-      });
+      const movies = data.crew.filter(credit => credit.job === "Director").sort((a, b) => b.popularity - a.popularity).filter(movie => movie.title && movie.release_date);
+      currentList = movies;
+      currentListTotalPages = Math.ceil(currentList.length / itemsPerPage);
+      currentListPage = 1;
+      displayListPage();
+      updatePagination(moviesPagination, "movies");
     } catch (error) {
       results.innerHTML = `<p>Error al cargar películas del director: ${error.message}</p>`;
     }
@@ -1384,30 +1378,52 @@
 
   function updatePagination(container, type) {
     container.innerHTML = "";
-    if ((type === "movies" ? movieTotalPages : seriesTotalPages) <= 1) return;
+    let totalPages, currentPage;
+    if (currentList.length > 0) {
+      totalPages = currentListTotalPages;
+      currentPage = currentListPage;
+    } else {
+      if (type === "movies") {
+        totalPages = movieTotalPages;
+        currentPage = currentMoviePage;
+      } else {
+        totalPages = seriesTotalPages;
+        currentPage = currentSeriesPage;
+      }
+    }
+    if (totalPages <= 1) return;
     
     const prevBtn = document.createElement("button");
     prevBtn.textContent = "« Anterior";
-    prevBtn.disabled = (type === "movies" ? currentMoviePage : currentSeriesPage) <= 1;
+    prevBtn.disabled = currentPage <= 1;
     prevBtn.onclick = () => {
-      if ((type === "movies" ? currentMoviePage : currentSeriesPage) > 1) {
+      if (currentList.length > 0) {
+        if (currentListPage > 1) {
+          currentListPage--;
+          displayListPage();
+        }
+      } else {
         if (type === "movies") {
-          currentMoviePage--;
-          if (currentSearchMode === "title") {
-            searchMovie(currentMoviePage);
-          } else if (currentSearchMode === "actor") {
-            searchActor(currentMoviePage);
-          } else if (currentSearchMode === "director") {
-            searchDirector(currentMoviePage);
+          if (currentMoviePage > 1) {
+            currentMoviePage--;
+            if (currentSearchMode === "title") {
+              searchMovie(currentMoviePage);
+            } else if (currentSearchMode === "actor") {
+              searchActor(currentMoviePage);
+            } else if (currentSearchMode === "director") {
+              searchDirector(currentMoviePage);
+            }
           }
         } else {
-          currentSeriesPage--;
-          if (currentSeriesSearchMode === "title") {
-            searchSeries(currentSeriesPage);
-          } else if (currentSeriesSearchMode === "actor") {
-            searchSeriesActor(currentSeriesPage);
-          } else if (currentSeriesSearchMode === "director") {
-            searchSeriesDirector(currentSeriesPage);
+          if (currentSeriesPage > 1) {
+            currentSeriesPage--;
+            if (currentSeriesSearchMode === "title") {
+              searchSeries(currentSeriesPage);
+            } else if (currentSeriesSearchMode === "actor") {
+              searchSeriesActor(currentSeriesPage);
+            } else if (currentSeriesSearchMode === "director") {
+              searchSeriesDirector(currentSeriesPage);
+            }
           }
         }
       }
@@ -1417,36 +1433,93 @@
     const pageInfo = document.createElement("span");
     pageInfo.style.color = "var(--text-secondary)";
     pageInfo.style.margin = "0 1rem";
-    pageInfo.textContent = `Página ${(type === "movies" ? currentMoviePage : currentSeriesPage)} de ${(type === "movies" ? movieTotalPages : seriesTotalPages)}`;
+    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
     container.appendChild(pageInfo);
 
     const nextBtn = document.createElement("button");
     nextBtn.textContent = "Siguiente »";
-    nextBtn.disabled = (type === "movies" ? currentMoviePage : currentSeriesPage) >= (type === "movies" ? movieTotalPages : seriesTotalPages);
+    nextBtn.disabled = currentPage >= totalPages;
     nextBtn.onclick = () => {
-      if ((type === "movies" ? currentMoviePage : currentSeriesPage) < (type === "movies" ? movieTotalPages : seriesTotalPages)) {
+      if (currentList.length > 0) {
+        if (currentListPage < currentListTotalPages) {
+          currentListPage++;
+          displayListPage();
+        }
+      } else {
         if (type === "movies") {
-          currentMoviePage++;
-          if (currentSearchMode === "title") {
-            searchMovie(currentMoviePage);
-          } else if (currentSearchMode === "actor") {
-            searchActor(currentMoviePage);
-          } else if (currentSearchMode === "director") {
-            searchDirector(currentMoviePage);
+          if (currentMoviePage < movieTotalPages) {
+            currentMoviePage++;
+            if (currentSearchMode === "title") {
+              searchMovie(currentMoviePage);
+            } else if (currentSearchMode === "actor") {
+              searchActor(currentMoviePage);
+            } else if (currentSearchMode === "director") {
+              searchDirector(currentMoviePage);
+            }
           }
         } else {
-          currentSeriesPage++;
-          if (currentSeriesSearchMode === "title") {
-            searchSeries(currentSeriesPage);
-          } else if (currentSeriesSearchMode === "actor") {
-            searchSeriesActor(currentSeriesPage);
-          } else if (currentSeriesSearchMode === "director") {
-            searchSeriesDirector(currentSeriesPage);
+          if (currentSeriesPage < seriesTotalPages) {
+            currentSeriesPage++;
+            if (currentSeriesSearchMode === "title") {
+              searchSeries(currentSeriesPage);
+            } else if (currentSeriesSearchMode === "actor") {
+              searchSeriesActor(currentSeriesPage);
+            } else if (currentSeriesSearchMode === "director") {
+              searchSeriesDirector(currentSeriesPage);
+            }
           }
         }
       }
     };
     container.appendChild(nextBtn);
+  }
+
+  function displayListPage() {
+    let container, headerText, itemNameKey, itemDateKey, posterPathKey, onclickFunc;
+    if (currentListType.includes('Movies')) {
+      container = results;
+      itemNameKey = 'title';
+      itemDateKey = 'release_date';
+      posterPathKey = 'poster_path';
+      onclickFunc = loadMovieDetails;
+      if (currentListType === 'actorMovies') {
+        headerText = `Películas de ${currentPersonName}`;
+      } else {
+        headerText = `Películas dirigidas por ${currentPersonName}`;
+      }
+    } else {
+      container = seriesResults;
+      itemNameKey = 'name';
+      itemDateKey = 'first_air_date';
+      posterPathKey = 'poster_path';
+      onclickFunc = loadSeriesDetails;
+      if (currentListType === 'actorSeries') {
+        headerText = `Series de ${currentPersonName}`;
+      } else {
+        headerText = `Series dirigidas por ${currentPersonName}`;
+      }
+    }
+    container.innerHTML = "";
+    const header = document.createElement("h3");
+    header.textContent = headerText;
+    header.style.textAlign = "center";
+    header.style.marginBottom = "1rem";
+    container.appendChild(header);
+    const start = (currentListPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const slice = currentList.slice(start, end);
+    slice.forEach((item) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      const poster = item[posterPathKey] ? `https://image.tmdb.org/t/p/w200${item[posterPathKey]}` : "https://via.placeholder.com/140x200?text=No+Image";
+      card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${item[itemNameKey]} (${item[itemDateKey] ? item[itemDateKey].slice(0,4) : "---"})</div>`;
+      card.onclick = async () => {
+        await onclickFunc(item.id);
+      };
+      container.appendChild(card);
+    });
+    const paginationContainer = currentListType.includes('Movies') ? moviesPagination : seriesPagination;
+    updatePagination(paginationContainer, currentListType.includes('Movies') ? "movies" : "series");
   }
 
   async function loadMovieDetails(movieId) {
@@ -1556,6 +1629,11 @@
     seasonSelect.innerHTML = "";
     episodeSelect.innerHTML = "";
     currentSeriesPage = 1;
+    currentList = [];
+    currentListType = '';
+    currentPersonName = '';
+    currentListPage = 1;
+    currentListTotalPages = 1;
     const currentTitle = document.getElementById("seriesTitleInput").value.trim();
     if (!currentTitle) {
       hideLoading();
@@ -1606,6 +1684,7 @@
       }
       seriesResults.innerHTML = "";
       seriesTotalPages = data.total_pages;
+      currentList = [];
       updatePagination(seriesPagination, "series");
       data.results.forEach((series) => {
         const card = document.createElement("div");
@@ -1637,6 +1716,7 @@
       }
       seriesResults.innerHTML = "";
       seriesTotalPages = data.total_pages;
+      currentList = [];
       updatePagination(seriesPagination, "series");
       data.results.forEach((person) => {
         const card = document.createElement("div");
@@ -1666,6 +1746,7 @@
       }
       seriesResults.innerHTML = "";
       seriesTotalPages = data.total_pages;
+      currentList = [];
       updatePagination(seriesPagination, "series");
       data.results.forEach((person) => {
         const card = document.createElement("div");
@@ -1686,29 +1767,19 @@
     seriesPagination.innerHTML = "";
     seriesSynopsisBox.innerHTML = "";
     currentSeriesId = "";
-    const header = document.createElement("h3");
-    header.textContent = `Series de ${actorName}`;
-    header.style.textAlign = "center";
-    header.style.marginBottom = "1rem";
-    seriesResults.appendChild(header);
+    currentPersonName = actorName;
+    currentListType = 'actorSeries';
     try {
       const url = `${tmdbBaseURL}/person/${actorId}/tv_credits?api_key=${tmdbApiKey}&language=es-ES`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Error en la respuesta de TMDB");
       const data = await res.json();
-      const seriesList = data.cast.sort((a, b) => b.popularity - a.popularity);
-      seriesList.forEach((series) => {
-        if (series.name && series.first_air_date) {
-          const card = document.createElement("div");
-          card.className = "card";
-          const poster = series.poster_path ? `https://image.tmdb.org/t/p/w200${series.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
-          card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${series.name} (${series.first_air_date ? series.first_air_date.slice(0,4) : "---"})</div>`;
-          card.onclick = async () => {
-            await loadSeriesDetails(series.id);
-          };
-          seriesResults.appendChild(card);
-        }
-      });
+      const seriesList = data.cast.sort((a, b) => b.popularity - a.popularity).filter(series => series.name && series.first_air_date);
+      currentList = seriesList;
+      currentListTotalPages = Math.ceil(currentList.length / itemsPerPage);
+      currentListPage = 1;
+      displayListPage();
+      updatePagination(seriesPagination, "series");
     } catch (error) {
       seriesResults.innerHTML = `<p>Error al cargar series del actor: ${error.message}</p>`;
     }
@@ -1719,29 +1790,19 @@
     seriesPagination.innerHTML = "";
     seriesSynopsisBox.innerHTML = "";
     currentSeriesId = "";
-    const header = document.createElement("h3");
-    header.textContent = `Series de ${directorName}`;
-    header.style.textAlign = "center";
-    header.style.marginBottom = "1rem";
-    seriesResults.appendChild(header);
+    currentPersonName = directorName;
+    currentListType = 'directorSeries';
     try {
       const url = `${tmdbBaseURL}/person/${directorId}/tv_credits?api_key=${tmdbApiKey}&language=es-ES`;
       const res = await fetch(url);
       if (!res.ok) throw new Error("Error en la respuesta de TMDB");
       const data = await res.json();
-      const seriesList = data.crew.filter(credit => credit.job === "Director").sort((a, b) => b.popularity - a.popularity);
-      seriesList.forEach((series) => {
-        if (series.name && series.first_air_date) {
-          const card = document.createElement("div");
-          card.className = "card";
-          const poster = series.poster_path ? `https://image.tmdb.org/t/p/w200${series.poster_path}` : "https://via.placeholder.com/140x200?text=No+Image";
-          card.innerHTML = `<img class="poster" src="${poster}"><div class="title">${series.name} (${series.first_air_date ? series.first_air_date.slice(0,4) : "---"})</div>`;
-          card.onclick = async () => {
-            await loadSeriesDetails(series.id);
-          };
-          seriesResults.appendChild(card);
-        }
-      });
+      const seriesList = data.crew.filter(credit => credit.job === "Director").sort((a, b) => b.popularity - a.popularity).filter(series => series.name && series.first_air_date);
+      currentList = seriesList;
+      currentListTotalPages = Math.ceil(currentList.length / itemsPerPage);
+      currentListPage = 1;
+      displayListPage();
+      updatePagination(seriesPagination, "series");
     } catch (error) {
       seriesResults.innerHTML = `<p>Error al cargar series del director: ${error.message}</p>`;
     }
