@@ -1107,6 +1107,7 @@
       <h3 id="playerChoiceTitle">Selecciona el reproductor para la película</h3>
       <button class="playerChoiceBtn" data-player="Rive">Rive</button>
       <button class="playerChoiceBtn" data-player="VidSrc">VidSrc</button>
+      <button class="playerChoiceBtn" data-player="CinemaOS">Cinema OS</button>
       <button id="playerChoiceCancelBtn">Cancelar</button>
     </div>
   </div>
@@ -1589,6 +1590,10 @@
           break;
         case "VidSrc":
           url = `https://vidsrc.xyz/embed/movie/${currentMovieId}`;
+          moviePlayerIframe.src = url;
+          break;
+        case "CinemaOS":
+          url = `https://cinemaos.tech/player/${currentMovieId}`;
           moviePlayerIframe.src = url;
           break;
       }
