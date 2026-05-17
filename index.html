@@ -1,766 +1,448 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🎬 CINEMA ID HUNTER | TMDB + IMDB</title>
-    <!-- Google Fonts + Font Awesome -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoviePulse · Buscador TMDB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root{
+      --bg:#070716;
+      --panel:rgba(255,255,255,.08);
+      --panel2:rgba(255,255,255,.12);
+      --text:#f8fbff;
+      --muted:#a8b3cf;
+      --pink:#ff3d8b;
+      --violet:#7c4dff;
+      --cyan:#2ee9ff;
+      --lime:#a7ff4f;
+      --orange:#ffb547;
+      --danger:#ff5570;
+      --radius:28px;
+    }
 
-        body {
-            background: radial-gradient(circle at 10% 30%, #0a0f1f, #03050b);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            padding: 2rem 1.5rem;
-            color: #edf2ff;
-            position: relative;
-        }
-        
-        /* efecto sutil de estrellas / partículas */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(2px 2px at 15px 40px, #fff3c9, rgba(0,0,0,0)),
-                              radial-gradient(1px 1px at 65px 120px, #fdcba0, rgba(0,0,0,0));
-            background-size: 70px 70px, 90px 90px;
-            background-repeat: repeat;
-            opacity: 0.2;
-            pointer-events: none;
-            z-index: 0;
-        }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      min-height:100vh;
+      font-family:'Outfit',system-ui,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255,61,139,.35), transparent 30%),
+        radial-gradient(circle at 88% 18%, rgba(46,233,255,.28), transparent 32%),
+        radial-gradient(circle at 48% 92%, rgba(124,77,255,.35), transparent 38%),
+        linear-gradient(145deg,#070716 0%,#101026 48%,#060612 100%);
+      overflow-x:hidden;
+    }
 
-        /* contenedor principal con glassmorphism refinado */
-        .app-wrapper {
-            max-width: 1300px;
-            margin: 0 auto;
-            background: rgba(12, 18, 34, 0.65);
-            backdrop-filter: blur(18px);
-            border-radius: 3rem;
-            box-shadow: 0 30px 50px -25px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(120, 180, 255, 0.25);
-            padding: 2rem 2rem 2rem;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 2;
-            border: 1px solid rgba(90, 150, 220, 0.3);
-        }
+    body::before{
+      content:"";
+      position:fixed; inset:-20%;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size:56px 56px;
+      transform:rotate(-8deg);
+      animation:gridMove 22s linear infinite;
+      pointer-events:none;
+      z-index:-2;
+    }
+    body::after{
+      content:"";
+      position:fixed; inset:0;
+      background:radial-gradient(circle, transparent 45%, rgba(0,0,0,.55));
+      pointer-events:none;
+      z-index:-1;
+    }
+    @keyframes gridMove{to{transform:rotate(-8deg) translateY(56px)}}
 
-        /* HEADER: título centrado y vistoso */
-        .main-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .main-header h1 {
-            font-size: 2.6rem;
-            font-weight: 900;
-            letter-spacing: -0.5px;
-            background: linear-gradient(125deg, #f9f3c1, #ffcd7e, #90e0ef, #70c8ff);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 15px rgba(0,180,255,0.3);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-        .main-header h1 i {
-            background: none;
-            -webkit-background-clip: unset;
-            color: #7bc5ff;
-            font-size: 2.2rem;
-            filter: drop-shadow(0 0 6px #3f9eff);
-        }
-        .subhead {
-            font-size: 0.9rem;
-            background: rgba(30, 60, 110, 0.5);
-            display: inline-block;
-            padding: 6px 18px;
-            border-radius: 40px;
-            margin-top: 12px;
-            backdrop-filter: blur(4px);
-            font-weight: 500;
-            color: #bfd9ff;
-            letter-spacing: 0.3px;
-            border: 1px solid rgba(100, 180, 255, 0.4);
-        }
-        
-        /* caja de búsqueda premium */
-        .search-card {
-            background: rgba(0, 4, 15, 0.55);
-            border-radius: 3rem;
-            margin-bottom: 2rem;
-            padding: 0.5rem;
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(80, 160, 255, 0.5);
-        }
-        .search-flex {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 12px;
-            background: rgba(20, 30, 55, 0.7);
-            border-radius: 3rem;
-            padding: 0.5rem 0.5rem 0.5rem 2rem;
-            backdrop-filter: blur(4px);
-        }
-        .search-flex i {
-            font-size: 1.5rem;
-            color: #6bc3ff;
-            filter: drop-shadow(0 0 4px #2a9eff);
-        }
-        .search-flex input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 1rem 0;
-            font-size: 1.05rem;
-            font-weight: 500;
-            color: #ffffff;
-            outline: none;
-            font-family: 'Inter', monospace;
-        }
-        .search-flex input::placeholder {
-            color: #93adcf;
-            font-weight: 400;
-            letter-spacing: -0.2px;
-        }
-        .search-flex button {
-            background: linear-gradient(105deg, #3c91e6, #1e5bc0, #153e7a);
-            border: none;
-            padding: 0.8rem 2.2rem;
-            border-radius: 3rem;
-            font-weight: 800;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 8px 20px rgba(0, 110, 255, 0.4);
-            letter-spacing: 0.6px;
-        }
-        .search-flex button:hover {
-            transform: scale(0.96);
-            background: linear-gradient(105deg, #2a7cd4, #0d48a3);
-            box-shadow: 0 10px 24px rgba(0, 100, 230, 0.6);
-        }
+    .shell{width:min(1220px,92vw);margin:auto;padding:34px 0 54px}
 
-        /* feedback */
-        .feedback-area {
-            text-align: center;
-            margin: 0.5rem 0 1.2rem;
-            min-height: 3rem;
-            font-weight: 500;
-        }
-        .loading {
-            color: #c8e7ff;
-            background: rgba(70, 150, 220, 0.2);
-            padding: 0.4rem 1.5rem;
-            border-radius: 3rem;
-            display: inline-block;
-            backdrop-filter: blur(4px);
-        }
-        .error {
-            background: rgba(255, 100, 120, 0.2);
-            padding: 0.5rem 1.5rem;
-            border-radius: 3rem;
-            display: inline-block;
-            color: #ffbaba;
-            border-left: 3px solid #ff6670;
-        }
+    .hero{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:28px;
+      align-items:stretch;
+      margin-bottom:30px;
+    }
 
-        /* grid de tarjetas */
-        .movies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 1rem;
-        }
+    .hero-main,.hero-side,.search-zone,.results-panel{
+      border:1px solid rgba(255,255,255,.16);
+      background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.045));
+      box-shadow:0 24px 90px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.13);
+      backdrop-filter:blur(20px);
+      border-radius:var(--radius);
+      position:relative;
+      overflow:hidden;
+    }
 
-        /* tarjeta con estilo neón / futurista */
-        .movie-tile {
-            background: radial-gradient(ellipse at 20% 30%, rgba(25, 45, 85, 0.9), rgba(10, 20, 45, 0.95));
-            backdrop-filter: blur(4px);
-            border-radius: 2rem;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease-out;
-            border: 1px solid rgba(80, 170, 255, 0.4);
-            box-shadow: 0 20px 30px -15px rgba(0, 0, 0, 0.5);
-        }
-        .movie-tile:hover {
-            transform: translateY(-8px) scale(1.01);
-            border-color: #70bdff;
-            box-shadow: 0 28px 38px -14px #00336680, 0 0 0 1px #3d9eff40 inset;
-            background: radial-gradient(ellipse at 20% 30%, rgba(35, 65, 120, 0.95), rgba(12, 25, 55, 0.98));
-        }
-        .poster-img {
-            height: 230px;
-            background: linear-gradient(145deg, #0a1025, #030618);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .poster-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-        .movie-tile:hover .poster-img img {
-            transform: scale(1.06);
-        }
-        .no-poster {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #141f38, #080e22);
-            color: #9eb4e6;
-            gap: 10px;
-            font-size: 0.8rem;
-        }
-        .tile-info {
-            padding: 1.2rem 1rem 1.3rem;
-        }
-        .tile-title {
-            font-weight: 800;
-            font-size: 1.18rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 6px;
-            color: #ffecb3;
-            letter-spacing: -0.2px;
-        }
-        .tile-year {
-            font-size: 0.7rem;
-            background: rgba(70, 150, 255, 0.25);
-            display: inline-block;
-            padding: 0.2rem 0.9rem;
-            border-radius: 30px;
-            margin-bottom: 12px;
-            font-weight: 600;
-            color: #bbdcff;
-        }
-        .ids-preview {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(0, 0, 0, 0.55);
-            border-radius: 1.2rem;
-            padding: 0.6rem 0.9rem;
-            font-size: 0.7rem;
-            font-family: monospace;
-            margin-top: 6px;
-        }
-        .preview-tmdb, .preview-imdb {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-weight: 600;
-        }
-        .click-hint {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 0.7rem;
-            opacity: 0.7;
-            letter-spacing: 0.3px;
-            color: #aac9ff;
-        }
+    .hero-main{padding:38px;min-height:390px;display:flex;flex-direction:column;justify-content:space-between}
+    .hero-main::before{
+      content:"";position:absolute;right:-100px;top:-100px;width:280px;height:280px;
+      background:conic-gradient(from 180deg,var(--cyan),var(--pink),var(--violet),var(--cyan));
+      filter:blur(22px);opacity:.45;border-radius:50%;animation:spin 8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-        /* MODAL GLASS + VIBRANTE */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(5, 8, 20, 0.92);
-            backdrop-filter: blur(18px);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.25s ease;
-            padding: 1rem;
-        }
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .modal-container {
-            max-width: 650px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            background: linear-gradient(145deg, #121c34, #060c1e);
-            border-radius: 2.2rem;
-            border: 1px solid rgba(70, 170, 255, 0.6);
-            box-shadow: 0 40px 60px rgba(0, 0, 0, 0.7);
-            transform: scale(0.96);
-            transition: transform 0.25s ease;
-        }
-        .modal-overlay.active .modal-container {
-            transform: scale(1);
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.2rem 1.8rem;
-            background: rgba(0, 20, 45, 0.8);
-            border-bottom: 1px solid #459eff;
-            position: sticky;
-            top: 0;
-            backdrop-filter: blur(12px);
-            z-index: 10;
-        }
-        .modal-header h3 {
-            font-weight: 800;
-            font-size: 1.45rem;
-            color: #ffeda3;
-            letter-spacing: -0.3px;
-        }
-        .close-modal {
-            background: none;
-            border: none;
-            color: #79bcff;
-            font-size: 1.9rem;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .modal-body {
-            padding: 1.8rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .modal-poster {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 0.4rem;
-        }
-        .modal-poster img {
-            max-width: 150px;
-            border-radius: 1.4rem;
-            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.6);
-            border: 2px solid #5faaff;
-        }
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px dashed #2c4468;
-            padding: 0.7rem 0;
-            gap: 12px;
-        }
-        .detail-label {
-            font-weight: 700;
-            color: #ffda9e;
-            min-width: 105px;
-        }
-        .detail-value {
-            font-family: monospace;
-            word-break: break-all;
-            text-align: right;
-            color: #d0e2ff;
-        }
-        .crew-section {
-            background: #07122a80;
-            border-radius: 1.5rem;
-            padding: 1rem;
-            margin-top: 0.5rem;
-            border-left: 3px solid #4fa5ff;
-        }
-        .crew-title {
-            font-weight: 700;
-            color: #7dc1ff;
-            margin-bottom: 10px;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .director-name {
-            background: #2c66bb40;
-            display: inline-block;
-            padding: 0.3rem 1rem;
-            border-radius: 2rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #ffdfa5;
-        }
-        .cast-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 6px;
-        }
-        .cast-badge {
-            background: rgba(70, 130, 220, 0.3);
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #eef5ff;
-        }
-        .overview-text {
-            background: #030c1e80;
-            padding: 0.9rem;
-            border-radius: 1.2rem;
-            font-size: 0.85rem;
-            line-height: 1.45;
-            max-height: 150px;
-            overflow-y: auto;
-            color: #d3e2ff;
-        }
-        .copy-id-btn {
-            background: #326fcf60;
-            border: none;
-            border-radius: 30px;
-            padding: 0.2rem 0.8rem;
-            margin-left: 10px;
-            color: white;
-            cursor: pointer;
-            font-size: 0.7rem;
-            transition: 0.1s;
-        }
-        .copy-id-btn:hover {
-            background: #468ef0;
-        }
-        .footer-small {
-            text-align: center;
-            margin-top: 2.5rem;
-            font-size: 0.7rem;
-            color: #95b1e3;
-            background: rgba(0,0,0,0.3);
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 0.4rem 1.5rem;
-            border-radius: 40px;
-        }
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #141f36;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #3c8eff;
-            border-radius: 10px;
-        }
-        @media (max-width: 640px) {
-            .app-wrapper {
-                padding: 1rem;
-            }
-            .search-flex {
-                padding: 0.4rem;
-            }
-            .search-flex button {
-                padding: 0.6rem 1.4rem;
-            }
-            .detail-row {
-                flex-direction: column;
-            }
-            .detail-value {
-                text-align: left;
-            }
-            .main-header h1 {
-                font-size: 1.9rem;
-            }
-        }
-    </style>
+    .brand{display:flex;gap:14px;align-items:center;margin-bottom:20px;position:relative;z-index:2}
+    .logo{
+      width:54px;height:54px;border-radius:18px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--pink),var(--violet),var(--cyan));
+      box-shadow:0 0 36px rgba(255,61,139,.45);
+      animation:float 3.5s ease-in-out infinite;
+    }
+    @keyframes float{50%{transform:translateY(-8px)}}
+    .brand strong{display:block;font-size:1.05rem;letter-spacing:.08em;text-transform:uppercase}
+    .brand span{font-size:.86rem;color:var(--muted)}
+
+    h1{font-size:clamp(2.6rem,6vw,5.8rem);line-height:.92;letter-spacing:-.07em;position:relative;z-index:2;max-width:850px}
+    .gradient-text{background:linear-gradient(90deg,#fff,var(--cyan),var(--pink),#fff);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:220%;animation:textShift 5s ease-in-out infinite}
+    @keyframes textShift{50%{background-position:100%}}
+    .hero-copy{color:#d8def4;font-size:1.06rem;max-width:650px;line-height:1.7;margin-top:22px;position:relative;z-index:2}
+
+    .hero-badges{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;position:relative;z-index:2}
+    .badge{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);padding:10px 14px;border-radius:999px;color:#eef4ff;font-weight:700;font-size:.88rem}
+    .badge i{color:var(--cyan);margin-right:7px}
+
+    .hero-side{padding:22px;display:grid;grid-template-rows:1fr auto;gap:16px}
+    .spotlight{
+      min-height:285px;border-radius:24px;padding:22px;
+      background:
+        linear-gradient(to top,rgba(0,0,0,.85),rgba(0,0,0,.1)),
+        url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=80') center/cover;
+      display:flex;flex-direction:column;justify-content:flex-end;
+      position:relative;overflow:hidden;
+    }
+    .spotlight::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.18),transparent);transform:translateX(-120%);animation:shine 5s infinite}
+    @keyframes shine{60%,100%{transform:translateX(120%)}}
+    .spotlight h2{font-size:1.8rem;letter-spacing:-.04em;position:relative;z-index:2}
+    .spotlight p{color:#d2d8ec;margin-top:8px;position:relative;z-index:2}
+
+    .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:16px;text-align:center}
+    .stat strong{display:block;font-size:1.35rem;color:var(--lime)}
+    .stat span{font-size:.78rem;color:var(--muted);font-weight:700;text-transform:uppercase}
+
+    .search-zone{padding:18px;margin-bottom:28px;position:sticky;top:14px;z-index:30}
+    .search-box{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.13);border-radius:24px;padding:12px 12px 12px 20px}
+    .search-icon{font-size:1.35rem;color:var(--cyan);filter:drop-shadow(0 0 12px var(--cyan))}
+    input{
+      width:100%;border:0;outline:0;background:transparent;color:#fff;
+      font:700 1.12rem 'Outfit',sans-serif;padding:14px 0;
+    }
+    input::placeholder{color:#78839f;font-weight:500}
+    button{
+      border:0;cursor:pointer;border-radius:18px;color:#fff;font-weight:900;
+      font-family:'Outfit',sans-serif;letter-spacing:.02em;transition:.25s ease;
+    }
+    .search-btn{
+      padding:16px 24px;background:linear-gradient(135deg,var(--pink),var(--violet));
+      box-shadow:0 16px 38px rgba(255,61,139,.32);
+    }
+    .search-btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 22px 46px rgba(124,77,255,.42)}
+    .search-btn:active{transform:scale(.98)}
+
+    .status{min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center;color:#d8def4;font-weight:700;margin-bottom:12px}
+    .status .pill{display:inline-flex;gap:10px;align-items:center;padding:11px 16px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
+    .status.error .pill{background:rgba(255,85,112,.14);border-color:rgba(255,85,112,.36);color:#ffd3db}
+
+    .results-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:24px 0 18px}
+    .results-head h2{font-size:2rem;letter-spacing:-.04em}
+    .results-head p{color:var(--muted);font-weight:600}
+
+    .movies-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px}
+    .movie-card{
+      background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.055));
+      border:1px solid rgba(255,255,255,.14);border-radius:26px;overflow:hidden;position:relative;
+      box-shadow:0 20px 48px rgba(0,0,0,.34);cursor:pointer;transition:.28s ease;
+      animation:cardIn .48s ease both;
+    }
+    @keyframes cardIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+    .movie-card:hover{transform:translateY(-10px);border-color:rgba(46,233,255,.7);box-shadow:0 30px 65px rgba(46,233,255,.14),0 20px 48px rgba(0,0,0,.45)}
+    .poster{height:345px;background:linear-gradient(135deg,#1b1738,#050510);position:relative;overflow:hidden}
+    .poster img{width:100%;height:100%;object-fit:cover;display:block;transition:.5s ease}
+    .movie-card:hover .poster img{transform:scale(1.08)}
+    .poster::after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.9))}
+    .rating{position:absolute;top:14px;right:14px;z-index:2;background:rgba(0,0,0,.62);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(10px);padding:8px 10px;border-radius:999px;font-weight:900;color:var(--orange)}
+    .card-info{padding:18px;min-height:170px;display:flex;flex-direction:column;gap:10px}
+    .movie-title{font-size:1.15rem;line-height:1.15;font-weight:900;letter-spacing:-.03em}
+    .meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-weight:700;font-size:.86rem}
+    .chip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.11);border-radius:999px;padding:7px 10px}
+    .ids{margin-top:auto;display:grid;grid-template-columns:1fr;gap:7px;font-family:ui-monospace,monospace;font-size:.78rem;color:#dce8ff}
+    .id-line{display:flex;justify-content:space-between;gap:10px;padding:9px 10px;background:rgba(0,0,0,.24);border-radius:14px}
+    .empty,.loading-card{grid-column:1/-1;text-align:center;padding:54px 24px;border-radius:28px;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.13);color:#d8def4}
+    .empty i,.loading-card i{font-size:2.4rem;margin-bottom:14px;color:var(--cyan)}
+
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.74);backdrop-filter:blur(18px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal.active{display:flex;animation:fadeIn .18s ease both}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .modal-box{width:min(920px,96vw);max-height:90vh;overflow:auto;border-radius:32px;background:linear-gradient(145deg,#161630,#090914);border:1px solid rgba(255,255,255,.18);box-shadow:0 40px 120px rgba(0,0,0,.65);animation:pop .24s ease both}
+    @keyframes pop{from{opacity:0;transform:scale(.94) translateY(18px)}to{opacity:1;transform:none}}
+    .modal-top{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.12);position:sticky;top:0;background:rgba(12,12,26,.86);backdrop-filter:blur(16px);z-index:2}
+    .modal-top h3{font-size:1.35rem;letter-spacing:-.03em}
+    .close{width:44px;height:44px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.13);font-size:1.1rem}
+    .close:hover{background:rgba(255,85,112,.22);transform:rotate(90deg)}
+    .modal-body{padding:24px;display:grid;grid-template-columns:240px 1fr;gap:24px}
+    .modal-poster{border-radius:24px;overflow:hidden;background:#050510;min-height:350px;border:1px solid rgba(255,255,255,.14)}
+    .modal-poster img{width:100%;height:100%;object-fit:cover;display:block}
+    .details{display:flex;flex-direction:column;gap:15px}
+    .overview{line-height:1.7;color:#d7def0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:18px}
+    .detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .detail{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:14px}
+    .detail span{display:block;color:var(--muted);font-size:.8rem;font-weight:800;text-transform:uppercase;margin-bottom:7px}
+    .detail strong{word-break:break-word}
+    .copy{margin-left:8px;background:linear-gradient(135deg,var(--cyan),var(--violet));padding:7px 9px;border-radius:10px;font-size:.72rem;vertical-align:middle}
+    .people{display:flex;flex-wrap:wrap;gap:9px}
+    .person{background:rgba(46,233,255,.11);border:1px solid rgba(46,233,255,.2);color:#eafbff;border-radius:999px;padding:8px 11px;font-weight:700;font-size:.86rem}
+
+    @media(max-width:860px){
+      .hero{grid-template-columns:1fr}.hero-main{min-height:auto;padding:28px}.search-box{grid-template-columns:auto 1fr}.search-btn{grid-column:1/-1;width:100%}.modal-body{grid-template-columns:1fr}.modal-poster{max-width:260px;margin:auto}.detail-grid{grid-template-columns:1fr}.results-head{display:block}.mini-stats{grid-template-columns:1fr 1fr 1fr}.poster{height:310px}
+    }
+    @media(max-width:520px){.shell{width:94vw;padding-top:18px}h1{font-size:2.65rem}.hero-main,.hero-side,.search-zone{border-radius:22px}.mini-stats{grid-template-columns:1fr}.movies-grid{grid-template-columns:1fr}.poster{height:420px}}
+  </style>
 </head>
 <body>
-<div class="app-wrapper">
-    <div class="main-header">
-        <h1><i class="fas fa-ticket-alt"></i> CINEMA ID HUNTER <i class="fas fa-id-card"></i></h1>
-        <div class="subhead"><i class="fas fa-mask"></i> TMDB · IMDB · Director · Reparto · Todos los datos en un solo clic</div>
-    </div>
-
-    <div class="search-card">
-        <div class="search-flex">
-            <i class="fas fa-film"></i>
-            <input type="text" id="searchInput" placeholder="Ej: Interestelar, El viaje de Chihiro, Whiplash, Dune 2..." autocomplete="off">
-            <button id="searchBtn"><i class="fas fa-rocket"></i> Explorar</button>
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-main">
+        <div>
+          <div class="brand">
+            <div class="logo"><i class="fa-solid fa-play"></i></div>
+            <div><strong>MoviePulse</strong><span>Buscador avanzado con TMDB</span></div>
+          </div>
+          <h1>Encuentra cualquier <span class="gradient-text">película</span> al instante.</h1>
+          <p class="hero-copy">Busca por título y descubre póster, puntuación, fecha, sinopsis, TMDB ID, IMDB ID, director y reparto principal con una interfaz dinámica y moderna.</p>
         </div>
-    </div>
-
-    <div id="feedback" class="feedback-area"></div>
-
-    <div id="moviesGrid" class="movies-grid">
-        <div style="grid-column:1/-1; text-align:center; padding:3rem; background:rgba(25,40,70,0.5); border-radius:2rem; backdrop-filter: blur(5px);">
-            <i class="fas fa-clapperboard" style="font-size:2.8rem; opacity:0.8; margin-bottom:14px; display:block; color:#7db9ff;"></i>
-            ✨ Busca cualquier película y descubre sus IDs secretos, director y elenco principal ✨
+        <div class="hero-badges">
+          <div class="badge"><i class="fa-solid fa-bolt"></i> Búsqueda real</div>
+          <div class="badge"><i class="fa-solid fa-id-card"></i> IDs copiables</div>
+          <div class="badge"><i class="fa-solid fa-film"></i> Ficha completa</div>
         </div>
-    </div>
-    <div class="footer-small">
-        <i class="fab fa-tmdb"></i> Potenciado por TMDb — Toque en cualquier tarjeta para ver el director + actores + detalles completos
-    </div>
-</div>
+      </div>
 
-<!-- MODAL DETALLES -->
-<div id="detailModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3 id="modalTitle">🎭 Ficha completa</h3>
-            <button class="close-modal" id="closeModalBtn"><i class="fas fa-circle-xmark"></i></button>
+      <aside class="hero-side">
+        <div class="spotlight">
+          <h2>Tu radar de cine</h2>
+          <p>Escribe una película y pulsa Explorar para abrir el catálogo.</p>
         </div>
-        <div class="modal-body" id="modalBody">
-            <div style="text-align:center; padding:1rem;"><i class="fas fa-spinner fa-pulse"></i> Cargando información premium...</div>
+        <div class="mini-stats">
+          <div class="stat"><strong>TMDB</strong><span>Datos</span></div>
+          <div class="stat"><strong>IMDB</strong><span>ID</span></div>
+          <div class="stat"><strong>ES</strong><span>Idioma</span></div>
         </div>
-    </div>
-</div>
+      </aside>
+    </section>
 
-<script>
-    // ---------- CONFIGURACIÓN ----------
+    <section class="search-zone">
+      <form class="search-box" id="searchForm">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input id="searchInput" type="search" placeholder="Escribe el nombre de una película..." autocomplete="off" />
+        <button class="search-btn" type="submit"><i class="fa-solid fa-compass"></i> Explorar</button>
+      </form>
+    </section>
+
+    <div id="status" class="status"></div>
+
+    <section class="results-panel" style="padding:24px;">
+      <div class="results-head">
+        <div>
+          <h2>Resultados</h2>
+          <p id="resultsSubtitle">Tus películas aparecerán aquí.</p>
+        </div>
+      </div>
+      <div id="moviesGrid" class="movies-grid">
+        <div class="empty">
+          <i class="fa-solid fa-ticket"></i>
+          <h3>Busca una película para empezar</h3>
+          <p>No hay resultados de prueba: solo aparecerá lo que tú busques.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <div class="modal-top">
+        <h3 id="modalTitle">Ficha de película</h3>
+        <button class="close" id="closeModal" type="button"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
     const TMDB_API_KEY = 'b60c8fb1893bba0f1380297e7a40257e';
     const BASE_URL = 'https://api.themoviedb.org/3';
-    const IMG_URL = 'https://image.tmdb.org/t/p/w342';
+    const IMG_342 = 'https://image.tmdb.org/t/p/w342';
+    const IMG_500 = 'https://image.tmdb.org/t/p/w500';
 
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    const feedbackDiv = document.getElementById('feedback');
-    const moviesGrid = document.getElementById('moviesGrid');
-    const modalOverlay = document.getElementById('detailModal');
-    const modalTitleSpan = document.getElementById('modalTitle');
-    const modalBodyDiv = document.getElementById('modalBody');
-    const closeModalBtn = document.getElementById('closeModalBtn');
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('searchInput');
+    const grid = document.getElementById('moviesGrid');
+    const statusBox = document.getElementById('status');
+    const subtitle = document.getElementById('resultsSubtitle');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const closeModal = document.getElementById('closeModal');
 
-    function setFeedback(msg, isError = false, isLoading = false) {
-        if (isLoading) feedbackDiv.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-pulse"></i> ${msg}</div>`;
-        else if (isError) feedbackDiv.innerHTML = `<div class="error"><i class="fas fa-triangle-exclamation"></i> ${msg}</div>`;
-        else feedbackDiv.innerHTML = `<div style="color:#cae3ff;"><i class="fas fa-database"></i> ${msg}</div>`;
-    }
-    function clearFeedback() { feedbackDiv.innerHTML = ''; }
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    const escapeHTML = (text = '') => String(text).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+    const yearOf = date => date ? date.split('-')[0] : 'Sin fecha';
+    const posterHTML = (path, title) => path ? `<img src="${IMG_342 + path}" alt="${escapeHTML(title)}" loading="lazy">` : `<div style="height:100%;display:grid;place-items:center;color:#a8b3cf;text-align:center;padding:20px"><i class="fa-solid fa-image" style="font-size:42px;margin-bottom:12px"></i><br>Sin póster</div>`;
 
-    async function copyToClipboard(text, label) {
-        if(!navigator.clipboard) { alert("No se puede copiar"); return; }
-        try {
-            await navigator.clipboard.writeText(text);
-            setFeedback(`✅ ${label} copiado: ${text}`, false);
-            setTimeout(() => { if(feedbackDiv.innerHTML.includes('copiado')) clearFeedback(); }, 1500);
-        } catch(e) { setFeedback(`❌ Error al copiar`, true); }
+    function setStatus(message = '', type = 'normal') {
+      statusBox.className = type === 'error' ? 'status error' : 'status';
+      statusBox.innerHTML = message ? `<div class="pill">${message}</div>` : '';
     }
 
-    async function fetchImdbId(tmdbMovieId) {
-        try {
-            const res = await fetch(`${BASE_URL}/movie/${tmdbMovieId}?api_key=${TMDB_API_KEY}&append_to_response=external_ids`);
-            if(!res.ok) return null;
-            const data = await res.json();
-            return data.external_ids?.imdb_id || null;
-        } catch(e) { return null; }
+    async function api(path) {
+      const res = await fetch(`${BASE_URL}${path}${path.includes('?') ? '&' : '?'}api_key=${TMDB_API_KEY}`);
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      return res.json();
     }
 
-    async function fetchCredits(tmdbMovieId) {
-        try {
-            const res = await fetch(`${BASE_URL}/movie/${tmdbMovieId}/credits?api_key=${TMDB_API_KEY}`);
-            if(!res.ok) return { director: null, cast: [] };
-            const data = await res.json();
-            const director = data.crew?.find(member => member.job === 'Director')?.name || null;
-            const cast = data.cast?.slice(0, 6).map(actor => actor.name) || [];
-            return { director, cast };
-        } catch(e) { return { director: null, cast: [] }; }
+    async function getImdbId(movieId) {
+      try {
+        const data = await api(`/movie/${movieId}/external_ids?`);
+        return data.imdb_id || 'No disponible';
+      } catch { return 'No disponible'; }
+    }
+
+    async function getCredits(movieId) {
+      try {
+        const data = await api(`/movie/${movieId}/credits?language=es-ES`);
+        const director = (data.crew || []).find(p => p.job === 'Director')?.name || 'No disponible';
+        const cast = (data.cast || []).slice(0, 8).map(p => p.name);
+        return { director, cast };
+      } catch { return { director:'No disponible', cast:[] }; }
     }
 
     async function searchMovies(query) {
-        if(!query.trim()) { setFeedback("⚠️ Escribe el título de una película", true); return []; }
-        setFeedback(`Buscando "${escapeHtml(query)}" en el multiverso...`, false, true);
-        try {
-            const url = `${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&language=es&query=${encodeURIComponent(query)}&page=1&include_adult=false`;
-            const resp = await fetch(url);
-            if(!resp.ok) throw new Error(`Error ${resp.status}`);
-            const data = await resp.json();
-            if(!data.results || data.results.length === 0) {
-                setFeedback(`❌ Sin resultados para "${escapeHtml(query)}"`, true);
-                return [];
-            }
-            setFeedback(`🎞️ ${data.results.length} joyas encontradas. ¡Haz clic para ver el director y elenco!`, false);
-            return data.results;
-        } catch(err) {
-            setFeedback(`Error de red: ${err.message}`, true);
-            return [];
-        }
+      return api(`/search/movie?language=es-ES&include_adult=false&page=1&query=${encodeURIComponent(query)}`);
     }
 
-    async function enrichMovies(movies) {
-        const enriched = [];
-        for (let movie of movies) {
-            const imdb = await fetchImdbId(movie.id);
-            enriched.push({ ...movie, imdb_id: imdb, tmdb_id: movie.id });
-        }
-        return enriched;
+    async function enrichForCards(movies) {
+      const top = movies.slice(0, 12);
+      const enriched = await Promise.all(top.map(async movie => ({
+        ...movie,
+        imdb_id: await getImdbId(movie.id)
+      })));
+      return enriched;
     }
 
-    function renderMoviesGrid(movies) {
-        if(!movies.length){
-            moviesGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2.5rem; background:rgba(0,0,0,0.4); border-radius:2rem;"><i class="fas fa-eye-slash"></i> Prueba otro título.</div>`;
-            return;
-        }
-        let html = '';
-        for (let m of movies) {
-            const title = m.title || 'Sin título';
-            const year = m.release_date ? m.release_date.split('-')[0] : '????';
-            const poster = m.poster_path ? IMG_URL + m.poster_path : null;
-            const tmdbShow = m.tmdb_id ? m.tmdb_id : '---';
-            const imdbShow = m.imdb_id ? m.imdb_id : 'no disponible';
-            html += `
-                <div class="movie-tile" data-movie-id="${m.id}" data-movie-title="${escapeHtml(title)}">
-                    <div class="poster-img">
-                        ${poster ? `<img src="${poster}" alt="${escapeHtml(title)}" loading="lazy">` : `
-                            <div class="no-poster"><i class="fas fa-film-slash"></i> Sin póster</div>
-                        `}
-                    </div>
-                    <div class="tile-info">
-                        <div class="tile-title">${escapeHtml(title)}</div>
-                        <div class="tile-year"><i class="far fa-calendar"></i> ${escapeHtml(year)}</div>
-                        <div class="ids-preview">
-                            <span class="preview-tmdb"><i class="fab fa-tmdb" style="color:#6bc3ff;"></i> ${tmdbShow}</span>
-                            <span class="preview-imdb"><i class="fab fa-imdb" style="color:#ffc107;"></i> ${imdbShow}</span>
-                        </div>
-                        <div class="click-hint"><i class="fas fa-magnifying-glass"></i> Click para ver director + reparto</div>
-                    </div>
-                </div>
-            `;
-        }
-        moviesGrid.innerHTML = html;
-        document.querySelectorAll('.movie-tile').forEach(card => {
-            card.addEventListener('click', async (e) => {
-                const movieId = card.getAttribute('data-movie-id');
-                if(movieId) await openModalWithDetails(movieId);
-            });
+    function renderMovies(movies) {
+      if (!movies.length) {
+        grid.innerHTML = `<div class="empty"><i class="fa-solid fa-face-frown"></i><h3>No encontré resultados</h3><p>Prueba escribiendo el título de otra forma.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = movies.map((m, index) => `
+        <article class="movie-card" data-id="${m.id}" style="animation-delay:${index * 45}ms">
+          <div class="poster">
+            ${posterHTML(m.poster_path, m.title)}
+            <div class="rating"><i class="fa-solid fa-star"></i> ${m.vote_average ? m.vote_average.toFixed(1) : '—'}</div>
+          </div>
+          <div class="card-info">
+            <h3 class="movie-title">${escapeHTML(m.title || 'Sin título')}</h3>
+            <div class="meta">
+              <span class="chip"><i class="fa-regular fa-calendar"></i> ${yearOf(m.release_date)}</span>
+              <span class="chip"><i class="fa-solid fa-users"></i> ${m.vote_count || 0}</span>
+            </div>
+            <div class="ids">
+              <div class="id-line"><span>TMDB</span><strong>${m.id}</strong></div>
+              <div class="id-line"><span>IMDB</span><strong>${escapeHTML(m.imdb_id)}</strong></div>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      document.querySelectorAll('.movie-card').forEach(card => {
+        card.addEventListener('click', () => openDetails(card.dataset.id));
+      });
+    }
+
+    async function openDetails(movieId) {
+      modal.classList.add('active');
+      modalTitle.textContent = 'Cargando ficha...';
+      modalBody.innerHTML = `<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i><h3>Cargando detalles</h3><p>Preparando la ficha completa.</p></div>`;
+
+      try {
+        const [movie, imdbId, credits] = await Promise.all([
+          api(`/movie/${movieId}?language=es-ES`),
+          getImdbId(movieId),
+          getCredits(movieId)
+        ]);
+
+        modalTitle.textContent = movie.title || 'Ficha de película';
+        modalBody.innerHTML = `
+          <div class="modal-poster">
+            ${movie.poster_path ? `<img src="${IMG_500 + movie.poster_path}" alt="${escapeHTML(movie.title)}">` : `<div style="height:100%;display:grid;place-items:center;color:#a8b3cf">Sin póster</div>`}
+          </div>
+          <div class="details">
+            <div class="overview">${escapeHTML(movie.overview || 'Sin sinopsis disponible.')}</div>
+            <div class="detail-grid">
+              <div class="detail"><span>Título original</span><strong>${escapeHTML(movie.original_title || movie.title)}</strong></div>
+              <div class="detail"><span>Estreno</span><strong>${escapeHTML(movie.release_date || 'No disponible')}</strong></div>
+              <div class="detail"><span>Puntuación</span><strong>⭐ ${movie.vote_average ? movie.vote_average.toFixed(1) : '—'} / 10</strong></div>
+              <div class="detail"><span>Votos</span><strong>${movie.vote_count || 0}</strong></div>
+              <div class="detail"><span>TMDB ID</span><strong>${movie.id}<button class="copy" data-copy="${movie.id}">Copiar</button></strong></div>
+              <div class="detail"><span>IMDB ID</span><strong>${escapeHTML(imdbId)}${imdbId !== 'No disponible' ? `<button class="copy" data-copy="${escapeHTML(imdbId)}">Copiar</button>` : ''}</strong></div>
+              <div class="detail"><span>Director</span><strong>${escapeHTML(credits.director)}</strong></div>
+              <div class="detail"><span>Duración</span><strong>${movie.runtime ? movie.runtime + ' min' : 'No disponible'}</strong></div>
+            </div>
+            <div class="detail">
+              <span>Reparto principal</span>
+              <div class="people">${credits.cast.length ? credits.cast.map(name => `<div class="person">${escapeHTML(name)}</div>`).join('') : '<strong>No disponible</strong>'}</div>
+            </div>
+          </div>
+        `;
+
+        modalBody.querySelectorAll('.copy').forEach(btn => {
+          btn.addEventListener('click', async e => {
+            e.stopPropagation();
+            await navigator.clipboard.writeText(btn.dataset.copy);
+            btn.textContent = 'Copiado';
+            setTimeout(() => btn.textContent = 'Copiar', 900);
+          });
         });
+      } catch (error) {
+        modalTitle.textContent = 'Error';
+        modalBody.innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><h3>No se pudo cargar la película</h3><p>${escapeHTML(error.message)}</p></div>`;
+      }
     }
 
-    async function openModalWithDetails(movieId) {
-        setFeedback("Abriendo carrete de datos...", false, true);
-        modalOverlay.classList.add('active');
-        modalBodyDiv.innerHTML = `<div style="text-align:center;"><i class="fas fa-spinner fa-pulse"></i> Cargando director, actores e IDs...</div>`;
-        
-        try {
-            const movieRes = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&language=es`);
-            if(!movieRes.ok) throw new Error("No se pudo cargar");
-            const movie = await movieRes.json();
-            
-            const externalRes = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=external_ids`);
-            const externalData = await externalRes.json();
-            const imdbId = externalData.external_ids?.imdb_id || null;
-            
-            const credits = await fetchCredits(movieId);
-            
-            const posterFull = movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : null;
-            const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : 'Desconocido';
-            const voteAvg = movie.vote_average ? movie.vote_average.toFixed(1) : '—';
-            
-            modalTitleSpan.innerText = `🎬 ${escapeHtml(movie.title)}`;
-            modalBodyDiv.innerHTML = `
-                <div style="display:flex; flex-direction:column; gap:14px;">
-                    <div class="modal-poster">
-                        ${posterFull ? `<img src="${posterFull}" alt="${escapeHtml(movie.title)}">` : `<div style="background:#00000066; padding:1rem; border-radius:1rem;"><i class="fas fa-image"></i> Sin imagen</div>`}
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label"><i class="fas fa-language"></i> Título original:</span>
-                        <span class="detail-value">${escapeHtml(movie.original_title || movie.title)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label"><i class="far fa-calendar-alt"></i> Estreno:</span>
-                        <span class="detail-value">${escapeHtml(movie.release_date || 'No especificada')} (${escapeHtml(releaseYear)})</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label"><i class="fab fa-tmdb"></i> TMDB ID:</span>
-                        <span class="detail-value">${movie.id} 
-                            <button class="copy-id-btn" data-copy-type="tmdb" data-copy-value="${movie.id}"><i class="far fa-copy"></i> Copiar</button>
-                        </span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label"><i class="fab fa-imdb"></i> IMDB ID:</span>
-                        <span class="detail-value">${imdbId ? imdbId : 'No disponible'}
-                            ${imdbId ? `<button class="copy-id-btn" data-copy-type="imdb" data-copy-value="${imdbId}"><i class="far fa-copy"></i> Copiar</button>` : ''}
-                        </span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label"><i class="fas fa-star"></i> Puntuación:</span>
-                        <span class="detail-value">⭐ ${voteAvg} / 10 (${movie.vote_count || 0} votos)</span>
-                    </div>
-                    
-                    <div class="crew-section">
-                        <div class="crew-title"><i class="fas fa-video"></i> Director / Dirección</div>
-                        ${credits.director ? `<div class="director-name"><i class="fas fa-user-astronaut"></i> ${escapeHtml(credits.director)}</div>` : '<div style="color:#aaa;">No disponible</div>'}
-                        
-                        <div class="crew-title" style="margin-top: 12px;"><i class="fas fa-users-viewfinder"></i> Elenco principal</div>
-                        <div class="cast-list">
-                            ${credits.cast.length ? credits.cast.map(actor => `<span class="cast-badge">${escapeHtml(actor)}</span>`).join('') : '<span>No disponible</span>'}
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <div class="detail-label" style="margin-bottom:6px;"><i class="fas fa-scroll"></i> Sinopsis:</div>
-                        <div class="overview-text">${escapeHtml(movie.overview) || 'Sin sinopsis disponible para esta película.'}</div>
-                    </div>
-                </div>
-            `;
-            
-            document.querySelectorAll('.copy-id-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const type = btn.getAttribute('data-copy-type');
-                    const value = btn.getAttribute('data-copy-value');
-                    if(value && value !== 'No disponible') {
-                        copyToClipboard(value, type === 'tmdb' ? 'TMDB ID' : 'IMDB ID');
-                    } else {
-                        setFeedback('ID no válido', true);
-                    }
-                });
-            });
-            clearFeedback();
-        } catch(err) {
-            console.error(err);
-            modalBodyDiv.innerHTML = `<div style="color:#ffaeae; text-align:center;">❌ Error al cargar datos: ${err.message}</div>`;
-            setFeedback("Error en detalles", true);
-        }
-    }
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const query = input.value.trim();
+      if (!query) {
+        setStatus('<i class="fa-solid fa-circle-exclamation"></i> Escribe el nombre de una película.', 'error');
+        input.focus();
+        return;
+      }
 
-    async function performSearch() {
-        const query = searchInput.value.trim();
-        if(!query) { setFeedback("🔎 Escribe el nombre de una película", true); return; }
-        moviesGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:3rem;"><i class="fas fa-spinner fa-pulse"></i> Buscando "${escapeHtml(query)}" ...</div>`;
-        const movies = await searchMovies(query);
-        if(movies.length === 0) {
-            moviesGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem;"><i class="fas fa-face-meh"></i> No se encontraron resultados.</div>`;
-            return;
-        }
-        setFeedback(`🕵️‍♂️ Enlazando IDs...`, false, true);
-        const enriched = await enrichMovies(movies);
-        renderMoviesGrid(enriched);
-        clearFeedback();
-        setFeedback(`🎉 ${enriched.length} películas listas. ¡Toca cualquier tarjeta para ver el universo completo!`, false);
-    }
+      setStatus(`<i class="fa-solid fa-spinner fa-spin"></i> Buscando “${escapeHTML(query)}”...`);
+      subtitle.textContent = `Búsqueda: ${query}`;
+      grid.innerHTML = `<div class="loading-card"><i class="fa-solid fa-spinner fa-spin"></i><h3>Explorando TMDB</h3><p>Buscando coincidencias reales...</p></div>`;
 
-    searchBtn.addEventListener('click', performSearch);
-    searchInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') performSearch(); });
-    closeModalBtn.addEventListener('click', () => modalOverlay.classList.remove('active'));
-    modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) modalOverlay.classList.remove('active'); });
-</script>
+      try {
+        const data = await searchMovies(query);
+        const enriched = await enrichForCards(data.results || []);
+        renderMovies(enriched);
+        setStatus(`<i class="fa-solid fa-check"></i> ${enriched.length} resultado(s) encontrados.`);
+      } catch (error) {
+        grid.innerHTML = `<div class="empty"><i class="fa-solid fa-wifi"></i><h3>Error de conexión</h3><p>No se pudo consultar TMDB.</p></div>`;
+        setStatus(`<i class="fa-solid fa-triangle-exclamation"></i> ${escapeHTML(error.message)}`, 'error');
+      }
+    });
+
+    closeModal.addEventListener('click', () => modal.classList.remove('active'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.classList.remove('active'); });
+  </script>
 </body>
 </html>
 
