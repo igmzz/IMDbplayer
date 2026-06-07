@@ -127,8 +127,6 @@
     .stat strong{display:block;font-size:1.35rem;color:var(--lime)}
     .stat span{font-size:.78rem;color:var(--muted);font-weight:700;text-transform:uppercase}
 
-
-
     .tabs{
       display:flex;
       gap:12px;
@@ -169,8 +167,36 @@
       background:#000;
     }
 
-    .search-zone{padding:18px;margin-bottom:28px;position:sticky;top:14px;z-index:30}
-    .search-box{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.13);border-radius:24px;padding:12px 12px 12px 20px}
+    .search-zone{
+      padding:18px;
+      margin-bottom:28px;
+      position:sticky;
+      top:14px;
+      z-index:300;
+      overflow:visible;
+    }
+
+    .search-zone::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:var(--radius);
+      background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.045));
+      z-index:-1;
+    }
+
+    .search-box{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      gap:14px;
+      align-items:center;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:24px;
+      padding:12px 12px 12px 20px;
+      position:relative;
+      z-index:2;
+    }
     .search-icon{font-size:1.35rem;color:var(--cyan);filter:drop-shadow(0 0 12px var(--cyan))}
     input{
       width:100%;border:0;outline:0;background:transparent;color:#fff;
@@ -187,6 +213,116 @@
     }
     .search-btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 22px 46px rgba(124,77,255,.42)}
     .search-btn:active{transform:scale(.98)}
+
+    .search-dropdowns{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-top:14px;
+      overflow:visible;
+      position:relative;
+      z-index:500;
+    }
+    .selector-box{
+      position:relative;
+      overflow:visible;
+      background:rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:22px;
+      padding:12px;
+      z-index:1;
+    }
+    .selector-box:focus-within{
+      z-index:900;
+    }
+    .selector-box label{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      color:#eef4ff;
+      font-weight:900;
+      font-size:.82rem;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      margin-bottom:7px;
+    }
+    .selector-box label i{color:var(--cyan)}
+    .selector-input-wrap{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:10px;
+      align-items:center;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:18px;
+      padding:0 12px;
+    }
+    .selector-input-wrap i{color:var(--cyan)}
+    .selector-input-wrap input{
+      font-size:.98rem;
+      padding:12px 0;
+    }
+    .dropdown-menu{
+      position:absolute;
+      left:0;
+      right:0;
+      top:calc(100% + 8px);
+      z-index:9999;
+      display:none;
+      max-height:360px;
+      overflow:auto;
+      padding:8px;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.16);
+      background:linear-gradient(145deg,rgba(18,18,42,.98),rgba(7,7,22,.98));
+      box-shadow:0 24px 65px rgba(0,0,0,.65);
+      backdrop-filter:blur(18px);
+    }
+    .dropdown-menu.active{display:block}
+    .dropdown-item{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      text-align:left;
+      background:transparent;
+      color:#fff;
+      padding:12px;
+      border-radius:15px;
+      box-shadow:none;
+    }
+    .dropdown-item:hover{
+      background:rgba(46,233,255,.12);
+      transform:none;
+    }
+    .dropdown-item strong{
+      display:block;
+      font-size:.98rem;
+      line-height:1.15;
+    }
+    .dropdown-item small{
+      display:block;
+      color:var(--muted);
+      font-weight:700;
+      margin-top:4px;
+      line-height:1.25;
+    }
+    .dropdown-item i{
+      color:var(--cyan);
+      flex:0 0 auto;
+    }
+    .dropdown-empty{
+      padding:16px;
+      color:#d8def4;
+      text-align:center;
+      font-weight:800;
+    }
+
+    .results-panel{
+      position:relative;
+      z-index:1;
+    }
 
     .status{min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center;color:#d8def4;font-weight:700;margin-bottom:12px}
     .status .pill{display:inline-flex;gap:10px;align-items:center;padding:11px 16px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
@@ -219,7 +355,7 @@
     .empty,.loading-card{grid-column:1/-1;text-align:center;padding:54px 24px;border-radius:28px;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.13);color:#d8def4}
     .empty i,.loading-card i{font-size:2.4rem;margin-bottom:14px;color:var(--cyan)}
 
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.74);backdrop-filter:blur(18px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.74);backdrop-filter:blur(18px);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px}
     .modal.active{display:flex;animation:fadeIn .18s ease both}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .modal-box{width:min(920px,96vw);max-height:90vh;overflow:auto;border-radius:32px;background:linear-gradient(145deg,#161630,#090914);border:1px solid rgba(255,255,255,.18);box-shadow:0 40px 120px rgba(0,0,0,.65);animation:pop .24s ease both}
@@ -240,11 +376,34 @@
     .copy{margin-left:8px;background:linear-gradient(135deg,var(--cyan),var(--violet));padding:7px 9px;border-radius:10px;font-size:.72rem;vertical-align:middle}
     .people{display:flex;flex-wrap:wrap;gap:9px}
     .person{background:rgba(46,233,255,.11);border:1px solid rgba(46,233,255,.2);color:#eafbff;border-radius:999px;padding:8px 11px;font-weight:700;font-size:.86rem}
+    .person.is-clickable{cursor:pointer}
+    .person.is-clickable:hover{
+      background:rgba(255,61,139,.2);
+      border-color:rgba(255,61,139,.45);
+      transform:translateY(-2px);
+    }
 
     @media(max-width:860px){
-      .hero{grid-template-columns:1fr}.hero-main{min-height:auto;padding:28px}.search-box{grid-template-columns:auto 1fr}.search-btn{grid-column:1/-1;width:100%}.modal-body{grid-template-columns:1fr}.modal-poster{max-width:260px;margin:auto}.detail-grid{grid-template-columns:1fr}.results-head{display:block}.mini-stats{grid-template-columns:1fr 1fr 1fr}.poster{height:310px}
+      .hero{grid-template-columns:1fr}
+      .hero-main{min-height:auto;padding:28px}
+      .search-box{grid-template-columns:auto 1fr}
+      .search-btn{grid-column:1/-1;width:100%}
+      .modal-body{grid-template-columns:1fr}
+      .modal-poster{max-width:260px;margin:auto}
+      .detail-grid{grid-template-columns:1fr}
+      .results-head{display:block}
+      .mini-stats{grid-template-columns:1fr 1fr 1fr}
+      .poster{height:310px}
+      .search-dropdowns{grid-template-columns:1fr}
     }
-    @media(max-width:520px){.shell{width:94vw;padding-top:18px}h1{font-size:2.65rem}.hero-main,.hero-side,.search-zone{border-radius:22px}.mini-stats{grid-template-columns:1fr}.movies-grid{grid-template-columns:1fr}.poster{height:420px}}
+    @media(max-width:520px){
+      .shell{width:94vw;padding-top:18px}
+      h1{font-size:2.65rem}
+      .hero-main,.hero-side,.search-zone{border-radius:22px}
+      .mini-stats{grid-template-columns:1fr}
+      .movies-grid{grid-template-columns:1fr}
+      .poster{height:420px}
+    }
   </style>
 </head>
 <body>
@@ -291,6 +450,35 @@
           <input id="searchInput" type="search" placeholder="Escribe el nombre de una película..." autocomplete="off" />
           <button class="search-btn" type="submit"><i class="fa-solid fa-compass"></i> Explorar</button>
         </form>
+
+        <div class="search-dropdowns" aria-label="Búsquedas desplegables">
+          <div class="selector-box">
+            <label for="movieSuggestInput"><i class="fa-solid fa-film"></i> Películas</label>
+            <div class="selector-input-wrap">
+              <i class="fa-solid fa-chevron-down"></i>
+              <input id="movieSuggestInput" type="search" placeholder="Buscar nombre de película..." autocomplete="off" />
+            </div>
+            <div id="movieDropdown" class="dropdown-menu"></div>
+          </div>
+
+          <div class="selector-box">
+            <label for="actorSuggestInput"><i class="fa-solid fa-user"></i> Actores</label>
+            <div class="selector-input-wrap">
+              <i class="fa-solid fa-chevron-down"></i>
+              <input id="actorSuggestInput" type="search" placeholder="Buscar nombre de actor..." autocomplete="off" />
+            </div>
+            <div id="actorDropdown" class="dropdown-menu"></div>
+          </div>
+
+          <div class="selector-box">
+            <label for="directorSuggestInput"><i class="fa-solid fa-video"></i> Directores</label>
+            <div class="selector-input-wrap">
+              <i class="fa-solid fa-chevron-down"></i>
+              <input id="directorSuggestInput" type="search" placeholder="Buscar nombre de director..." autocomplete="off" />
+            </div>
+            <div id="directorDropdown" class="dropdown-menu"></div>
+          </div>
+        </div>
       </section>
 
       <div id="status" class="status"></div>
@@ -347,6 +535,17 @@
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    const movieSuggestInput = document.getElementById('movieSuggestInput');
+    const actorSuggestInput = document.getElementById('actorSuggestInput');
+    const directorSuggestInput = document.getElementById('directorSuggestInput');
+    const movieDropdown = document.getElementById('movieDropdown');
+    const actorDropdown = document.getElementById('actorDropdown');
+    const directorDropdown = document.getElementById('directorDropdown');
+
+    let movieSuggestions = [];
+    let actorSuggestions = [];
+    let directorSuggestions = [];
+
     tabButtons.forEach(button => {
       button.addEventListener('click', () => {
         tabButtons.forEach(btn => btn.classList.remove('active'));
@@ -375,20 +574,47 @@
       try {
         const data = await api(`/movie/${movieId}/external_ids?`);
         return data.imdb_id || 'No disponible';
-      } catch { return 'No disponible'; }
+      } catch {
+        return 'No disponible';
+      }
     }
 
     async function getCredits(movieId) {
       try {
         const data = await api(`/movie/${movieId}/credits?language=es-ES`);
-        const director = (data.crew || []).find(p => p.job === 'Director')?.name || 'No disponible';
-        const cast = (data.cast || []).slice(0, 8).map(p => p.name);
-        return { director, cast };
-      } catch { return { director:'No disponible', cast:[] }; }
+
+        const directors = (data.crew || [])
+          .filter(p => p.job === 'Director')
+          .map(p => ({ id: p.id, name: p.name }));
+
+        const director = directors.length
+          ? directors.map(p => p.name).join(', ')
+          : 'No disponible';
+
+        const cast = (data.cast || [])
+          .slice(0, 8)
+          .map(p => ({ id: p.id, name: p.name }));
+
+        return { director, directors, cast };
+      } catch {
+        return { director:'No disponible', directors:[], cast:[] };
+      }
     }
 
     async function searchMovies(query) {
       return api(`/search/movie?language=es-ES&include_adult=false&page=1&query=${encodeURIComponent(query)}`);
+    }
+
+    async function searchPeople(query) {
+      return api(`/search/person?language=es-ES&include_adult=false&page=1&query=${encodeURIComponent(query)}`);
+    }
+
+    async function getPersonMovieCredits(personId) {
+      try {
+        return await api(`/person/${personId}/movie_credits?language=es-ES`);
+      } catch {
+        return { cast: [], crew: [] };
+      }
     }
 
     async function enrichForCards(movies) {
@@ -420,7 +646,7 @@
             </div>
             <div class="ids">
               <div class="id-line"><span>TMDB</span><strong>${m.id}</strong></div>
-              <div class="id-line"><span>IMDB</span><strong>${escapeHTML(m.imdb_id)}</strong></div>
+              <div class="id-line"><span>IMDB</span><strong>${escapeHTML(m.imdb_id || 'Abre ficha')}</strong></div>
             </div>
           </div>
         </article>
@@ -430,6 +656,269 @@
         card.addEventListener('click', () => openDetails(card.dataset.id));
       });
     }
+
+    function debounce(fn, delay = 350) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    function closeAllDropdowns(except = null) {
+      [movieDropdown, actorDropdown, directorDropdown].forEach(menu => {
+        if (menu !== except) menu.classList.remove('active');
+      });
+    }
+
+    function showDropdown(menu, html) {
+      menu.innerHTML = html;
+      menu.classList.add('active');
+    }
+
+    function showDropdownLoading(menu, text) {
+      showDropdown(menu, `<div class="dropdown-empty"><i class="fa-solid fa-spinner fa-spin"></i> ${text}</div>`);
+    }
+
+    function showDropdownEmpty(menu, text) {
+      showDropdown(menu, `<div class="dropdown-empty">${text}</div>`);
+    }
+
+    function knownForText(person) {
+      const titles = (person.known_for || [])
+        .map(item => item.title || item.name)
+        .filter(Boolean)
+        .slice(0, 2)
+        .join(', ');
+
+      return titles || person.known_for_department || 'Sin información';
+    }
+
+    function renderMovieDropdown(movies) {
+      movieSuggestions = (movies || []).slice(0, 8);
+
+      if (!movieSuggestions.length) {
+        showDropdownEmpty(movieDropdown, 'No encontré películas.');
+        return;
+      }
+
+      showDropdown(movieDropdown, movieSuggestions.map((movie, index) => `
+        <button class="dropdown-item" type="button" data-index="${index}">
+          <span>
+            <strong>${escapeHTML(movie.title || 'Sin título')}</strong>
+            <small>${yearOf(movie.release_date)} · TMDB ${movie.id}</small>
+          </span>
+          <i class="fa-solid fa-film"></i>
+        </button>
+      `).join(''));
+
+      movieDropdown.querySelectorAll('.dropdown-item').forEach(button => {
+        button.addEventListener('click', async () => {
+          const movie = movieSuggestions[Number(button.dataset.index)];
+          if (!movie) return;
+
+          closeAllDropdowns();
+          movieSuggestInput.value = movie.title || '';
+          input.value = movie.title || '';
+
+          setStatus(`<i class="fa-solid fa-spinner fa-spin"></i> Cargando “${escapeHTML(movie.title || 'película')}”...`);
+          subtitle.textContent = `Película seleccionada: ${movie.title || 'Sin título'}`;
+          grid.innerHTML = `<div class="loading-card"><i class="fa-solid fa-spinner fa-spin"></i><h3>Cargando película</h3><p>Preparando resultado seleccionado...</p></div>`;
+
+          try {
+            const enriched = await enrichForCards([movie]);
+            renderMovies(enriched);
+            setStatus(`<i class="fa-solid fa-check"></i> Película cargada.`);
+          } catch (error) {
+            grid.innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><h3>No se pudo cargar la película</h3><p>${escapeHTML(error.message)}</p></div>`;
+            setStatus(`<i class="fa-solid fa-triangle-exclamation"></i> ${escapeHTML(error.message)}`, 'error');
+          }
+        });
+      });
+    }
+
+    function renderPeopleDropdown(menu, people, type) {
+      const list = (people || []).slice(0, 8);
+
+      if (type === 'actor') actorSuggestions = list;
+      if (type === 'director') directorSuggestions = list;
+
+      if (!list.length) {
+        showDropdownEmpty(menu, type === 'actor' ? 'No encontré actores.' : 'No encontré directores.');
+        return;
+      }
+
+      showDropdown(menu, list.map((person, index) => {
+        const extra = type === 'director' && person._directorMoviesCount
+          ? `${person._directorMoviesCount} película(s) dirigidas`
+          : knownForText(person);
+
+        return `
+          <button class="dropdown-item" type="button" data-index="${index}">
+            <span>
+              <strong>${escapeHTML(person.name || 'Sin nombre')}</strong>
+              <small>${escapeHTML(extra)}</small>
+            </span>
+            <i class="fa-solid ${type === 'actor' ? 'fa-user' : 'fa-video'}"></i>
+          </button>
+        `;
+      }).join(''));
+
+      menu.querySelectorAll('.dropdown-item').forEach(button => {
+        button.addEventListener('click', () => {
+          const listSource = type === 'actor' ? actorSuggestions : directorSuggestions;
+          const person = listSource[Number(button.dataset.index)];
+          if (!person) return;
+
+          if (type === 'actor') actorSuggestInput.value = person.name || '';
+          if (type === 'director') directorSuggestInput.value = person.name || '';
+
+          loadPersonMovies(person.id, person.name, type);
+        });
+      });
+    }
+
+    function normalizePersonMovies(items) {
+      const seen = new Set();
+
+      return (items || [])
+        .filter(item => item.id && (item.title || item.original_title))
+        .map(item => ({
+          id: item.id,
+          title: item.title || item.original_title || 'Sin título',
+          poster_path: item.poster_path || null,
+          release_date: item.release_date || '',
+          vote_average: Number(item.vote_average) || 0,
+          vote_count: Number(item.vote_count) || 0,
+          imdb_id: 'Abre ficha'
+        }))
+        .filter(movie => {
+          if (seen.has(movie.id)) return false;
+          seen.add(movie.id);
+          return true;
+        })
+        .sort((a, b) => {
+          const ratingDiff = (b.vote_average || 0) - (a.vote_average || 0);
+          if (ratingDiff !== 0) return ratingDiff;
+
+          const votesDiff = (b.vote_count || 0) - (a.vote_count || 0);
+          if (votesDiff !== 0) return votesDiff;
+
+          return (b.release_date || '').localeCompare(a.release_date || '');
+        });
+    }
+
+    async function loadPersonMovies(personId, personName, type) {
+      closeAllDropdowns();
+      modal.classList.remove('active');
+
+      const actionText = type === 'director' ? 'dirigidas' : 'actuadas';
+      const labelText = type === 'director' ? 'Director' : 'Actor';
+
+      setStatus(`<i class="fa-solid fa-spinner fa-spin"></i> Buscando películas ${actionText} por “${escapeHTML(personName)}”...`);
+      subtitle.textContent = `${labelText}: ${personName} · Ordenado de mejor valorada a menor`;
+      grid.innerHTML = `<div class="loading-card"><i class="fa-solid fa-spinner fa-spin"></i><h3>Explorando filmografía</h3><p>Buscando películas ${actionText}...</p></div>`;
+
+      try {
+        const credits = await getPersonMovieCredits(personId);
+
+        const rawMovies = type === 'director'
+          ? (credits.crew || []).filter(item => item.job === 'Director')
+          : (credits.cast || []);
+
+        const movies = normalizePersonMovies(rawMovies);
+
+        renderMovies(movies);
+
+        if (movies.length) {
+          setStatus(`<i class="fa-solid fa-check"></i> ${movies.length} película(s) ${actionText} por “${escapeHTML(personName)}”, ordenadas de mejor valorada a menor.`);
+        } else {
+          setStatus(`<i class="fa-solid fa-circle-info"></i> No encontré películas ${actionText} para “${escapeHTML(personName)}”.`, 'error');
+        }
+      } catch (error) {
+        grid.innerHTML = `<div class="empty"><i class="fa-solid fa-wifi"></i><h3>Error de conexión</h3><p>No se pudo consultar TMDB.</p></div>`;
+        setStatus(`<i class="fa-solid fa-triangle-exclamation"></i> ${escapeHTML(error.message)}`, 'error');
+      }
+    }
+
+    movieSuggestInput.addEventListener('input', debounce(async () => {
+      const query = movieSuggestInput.value.trim();
+
+      if (query.length < 2) {
+        movieDropdown.classList.remove('active');
+        return;
+      }
+
+      closeAllDropdowns(movieDropdown);
+      showDropdownLoading(movieDropdown, 'Buscando películas...');
+
+      try {
+        const data = await searchMovies(query);
+        renderMovieDropdown(data.results || []);
+      } catch {
+        showDropdownEmpty(movieDropdown, 'No se pudo buscar películas.');
+      }
+    }));
+
+    actorSuggestInput.addEventListener('input', debounce(async () => {
+      const query = actorSuggestInput.value.trim();
+
+      if (query.length < 2) {
+        actorDropdown.classList.remove('active');
+        return;
+      }
+
+      closeAllDropdowns(actorDropdown);
+      showDropdownLoading(actorDropdown, 'Buscando actores...');
+
+      try {
+        const data = await searchPeople(query);
+        const actors = (data.results || [])
+          .filter(person => person.known_for_department === 'Acting' || knownForText(person))
+          .slice(0, 8);
+
+        renderPeopleDropdown(actorDropdown, actors, 'actor');
+      } catch {
+        showDropdownEmpty(actorDropdown, 'No se pudo buscar actores.');
+      }
+    }));
+
+    directorSuggestInput.addEventListener('input', debounce(async () => {
+      const query = directorSuggestInput.value.trim();
+
+      if (query.length < 2) {
+        directorDropdown.classList.remove('active');
+        return;
+      }
+
+      closeAllDropdowns(directorDropdown);
+      showDropdownLoading(directorDropdown, 'Buscando directores...');
+
+      try {
+        const data = await searchPeople(query);
+        const topPeople = (data.results || []).slice(0, 8);
+
+        const checkedPeople = await Promise.all(topPeople.map(async person => {
+          const credits = await getPersonMovieCredits(person.id);
+          const directorMovies = (credits.crew || []).filter(item => item.job === 'Director');
+          return {
+            ...person,
+            _directorMoviesCount: directorMovies.length
+          };
+        }));
+
+        const directors = checkedPeople.filter(person => person._directorMoviesCount > 0);
+        renderPeopleDropdown(directorDropdown, directors, 'director');
+      } catch {
+        showDropdownEmpty(directorDropdown, 'No se pudo buscar directores.');
+      }
+    }));
+
+    document.addEventListener('click', event => {
+      if (!event.target.closest('.selector-box')) {
+        closeAllDropdowns();
+      }
+    });
 
     async function openDetails(movieId) {
       modal.classList.add('active');
@@ -457,12 +946,23 @@
               <div class="detail"><span>Votos</span><strong>${movie.vote_count || 0}</strong></div>
               <div class="detail"><span>TMDB ID</span><strong>${movie.id}<button class="copy" data-copy="${movie.id}">Copiar</button></strong></div>
               <div class="detail"><span>IMDB ID</span><strong>${escapeHTML(imdbId)}${imdbId !== 'No disponible' ? `<button class="copy" data-copy="${escapeHTML(imdbId)}">Copiar</button>` : ''}</strong></div>
-              <div class="detail"><span>Director</span><strong>${escapeHTML(credits.director)}</strong></div>
+              <div class="detail">
+                <span>Director</span>
+                <div class="people">
+                  ${credits.directors.length ? credits.directors.map(person => `
+                    <button class="person is-clickable" type="button" data-person-id="${person.id}" data-person-name="${escapeHTML(person.name)}" data-person-type="director">${escapeHTML(person.name)}</button>
+                  `).join('') : '<strong>No disponible</strong>'}
+                </div>
+              </div>
               <div class="detail"><span>Duración</span><strong>${movie.runtime ? movie.runtime + ' min' : 'No disponible'}</strong></div>
             </div>
             <div class="detail">
               <span>Reparto principal</span>
-              <div class="people">${credits.cast.length ? credits.cast.map(name => `<div class="person">${escapeHTML(name)}</div>`).join('') : '<strong>No disponible</strong>'}</div>
+              <div class="people">
+                ${credits.cast.length ? credits.cast.map(person => `
+                  <button class="person is-clickable" type="button" data-person-id="${person.id}" data-person-name="${escapeHTML(person.name)}" data-person-type="actor">${escapeHTML(person.name)}</button>
+                `).join('') : '<strong>No disponible</strong>'}
+              </div>
             </div>
           </div>
         `;
@@ -475,6 +975,13 @@
             setTimeout(() => btn.textContent = 'Copiar', 900);
           });
         });
+
+        modalBody.querySelectorAll('.person.is-clickable').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            loadPersonMovies(btn.dataset.personId, btn.dataset.personName, btn.dataset.personType);
+          });
+        });
       } catch (error) {
         modalTitle.textContent = 'Error';
         modalBody.innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><h3>No se pudo cargar la película</h3><p>${escapeHTML(error.message)}</p></div>`;
@@ -484,6 +991,7 @@
     form.addEventListener('submit', async event => {
       event.preventDefault();
       const query = input.value.trim();
+
       if (!query) {
         setStatus('<i class="fa-solid fa-circle-exclamation"></i> Escribe el nombre de una película.', 'error');
         input.focus();
@@ -511,7 +1019,6 @@
   </script>
 </body>
 </html>
-
 
 
 
