@@ -986,6 +986,20 @@
 
     const escapeHTML = (text = '') => String(text).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
     const yearOf = date => date ? date.split('-')[0] : 'Sin fecha';
+
+    // Genera el nombre a guardar con el título oficial en inglés y el año.
+    function toSaveTitle(title = '') {
+      return String(title)
+        .trim()
+        .toLowerCase()
+        .replace(/\b\p{L}/gu, letter => letter.toUpperCase());
+    }
+
+    function buildSaveName(englishTitle, fallbackTitle, releaseDate) {
+      const title = toSaveTitle(englishTitle || fallbackTitle || 'Sin título');
+      const year = releaseDate ? releaseDate.split('-')[0] : 'Sin fecha';
+      return `${title} - (${year})`;
+    }
     const posterHTML = (path, title) => path ? `<img src="${IMG_342 + path}" alt="${escapeHTML(title)}" loading="lazy">` : `<div style="height:100%;display:grid;place-items:center;color:#a8b3cf;text-align:center;padding:20px"><i class="fa-solid fa-image" style="font-size:42px;margin-bottom:12px"></i><br>Sin póster</div>`;
 
     function setStatus(message = '', type = 'normal') {
@@ -1358,11 +1372,18 @@
       modalBody.innerHTML = `<div class="empty"><i class="fa-solid fa-spinner fa-spin"></i><h3>Cargando detalles</h3><p>Preparando la ficha completa.</p></div>`;
 
       try {
-        const [movie, imdbId, credits] = await Promise.all([
+        const [movie, movieEnglish, imdbId, credits] = await Promise.all([
           api(`/movie/${movieId}?language=es-ES`),
+          api(`/movie/${movieId}?language=en-US`),
           getImdbId(movieId),
           getCredits(movieId)
         ]);
+
+        const saveName = buildSaveName(
+          movieEnglish.title || movieEnglish.original_title,
+          movie.title || movie.original_title,
+          movie.release_date || movieEnglish.release_date
+        );
 
         modalTitle.textContent = movie.title || 'Ficha de película';
         modalBody.innerHTML = `
@@ -1376,6 +1397,7 @@
               </a>
               <div class="detail-grid">
               <div class="detail"><span>Título original</span><strong>${escapeHTML(movie.original_title || movie.title)}</strong></div>
+              <div class="detail"><span>Nombre a guardar</span><strong>${escapeHTML(saveName)}<button class="copy" data-copy="${escapeHTML(saveName)}">Copiar</button></strong></div>
               <div class="detail"><span>Estreno</span><strong>${escapeHTML(movie.release_date || 'No disponible')}</strong></div>
               <div class="detail"><span>Puntuación</span><strong>⭐ ${movie.vote_average ? movie.vote_average.toFixed(1) : '—'} / 10</strong></div>
               <div class="detail"><span>Votos</span><strong>${movie.vote_count || 0}</strong></div>
@@ -1499,6 +1521,19 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
